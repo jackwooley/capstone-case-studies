@@ -1,4 +1,4 @@
-# AUSTIN BAILEY
+# DATA SLAYERS SLAYERS
 
 import pandas as pd
 from sklearn.linear_model import LinearRegression
@@ -14,10 +14,10 @@ from sklearn.feature_selection import RFE
 from sklearn.svm import SVR
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
+from sklearn.feature_selection import SelectKBest, chi2
+from sklearn import preprocessing
+from sklearn.feature_selection import RFE, SelectFromModel, f_regression
 
-raw = read_csv('/home/thomaswit/DataSCapstone/capstone-case-studies/uci-crime/crimedata.csv')
-print(raw.head(5))
-print(raw.shape)
 
 # FOUR ASSUMPTIONS OF LINEAR REGRESSION
 # LINE
@@ -26,16 +26,26 @@ print(raw.shape)
 # Normality
 # Equal variance
 
-# DATA CLEANING
+# region IMPORT AND CLEANING
+raw = read_csv('/home/thomaswit/DataSCapstone/capstone-case-studies/uci-crime/crimedata.csv')
+print(raw.head(5))
+print(raw.shape)
+raw = read_csv('crimedata.csv')
+# print(raw.head(5))
+# print("base", raw.shape)
+
 data = raw
-y = "nonViolPerPop"
+y_name = "nonViolPerPop"
 data.replace('?', np.NaN, inplace=True)
 # Drop because not relevant
 data.drop(['communityname', 'state', 'countyCode', 'communityCode', 'fold'], axis=1, inplace=True)
 # Drop because TOO relevant to crime prediction
 data.drop(data.columns[124:-1], axis=1, inplace=True)
-print(data.shape)
-print(data.columns)
+# Drop because can't make judgement off this
+data.drop(["racepctblack", "racePctWhite", "racePctAsian", "racePctHisp", "whitePerCap", "blackPerCap", "indianPerCap",
+           "AsianPerCap", "OtherPerCap", "HispPerCap", ], axis=1, inplace=True)
+# print("cut crime:", data.shape)
+# print(data.columns)
 # Dropping columns with mostly missing data
 na_vec = data.isnull().sum()
 count = 0
@@ -45,54 +55,116 @@ for x in na_vec:
         to_drop.append(count)
     count += 1
 data.drop(data.columns[to_drop], axis=1, inplace=True)
-print(data.shape)
+# print("remove columns with many ?:", data.shape)
 # Drop any rows with missing values
 data.dropna(inplace=True)
-print(data.shape)
+# print("remove rows with ?:", data.shape)
 data = data.apply(pd.to_numeric)
 # Dropping heavily missing columns before dropping rows leaves 2117 x 121
 # Dropping just rows leaves us with 302 x 142
 
+# sns.pairplot(data)
+# plt.show()
+data.hist()
+plt.show()
+data.plot()
+plt.show()
+
+# endregion
+
+# region preprocessing
+def power_transform(X, y):
+    pt = preprocessing.PowerTransformer()
+    X = pt.fit_transform(X)
+    # y = pt.fit_transform(np.array(y).reshape(-1,1))
+    return X, y
+
+
+def select_features(X_train, y_train, X_test, k_val):
+    # configure to select all features
+    fs = SelectKBest(score_func=f_regression, k=k_val)
+    fs.fit(X_train, y_train)
+    X_train_fs = fs.transform(X_train)
+    X_test_fs = fs.transform(X_test)
+
+    # print(fs.feature_names_in_)
+    # Show Feature Scores
+    # for i in range(len(fs.scores_)):
+    #     print('Feature %d: %f' % (i, fs.scores_[i]))
+    # plot the scores
+    # plt.bar([i for i in range(len(fs.scores_))], fs.scores_)
+    # plt.show()
+    return X_train_fs, X_test_fs
+
 # Produce response vector
-response = data[y].tolist()
-data = data.drop(y, axis=1)
+y = data[y_name].tolist()
+X = data.drop(y_name, axis=1)
+
+# scale
+X, y = power_transform(X, y)
+
 # Train-test split
-X_train, X_test, y_train, y_test = train_test_split(data, response, test_size=0.1, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# print(X_train.columns)
 
-# Run Linear Regression on Data
-# reg = LinearRegression().fit(X_train, y_train)
-# score = reg.score(X_test, y_test)
-# coef = reg.coef_
-# int = reg.intercept_
-# print("R^2: ", score)
-# print("coef: ", coef)
-# print("Intercept: ", int)
+# feature selection
+X_train, X_test = select_features(X_train, y_train, X_test, 'all')
+# all, or val for number of features wanted
 
-# Run LASSO on Data
-lasso = linear_model.Lasso(alpha=.1)
-lasso.fit(X_train, y_train)
-pred_train_lasso= lasso.predict(X_train)
+# endregion
 
-print(np.sqrt(mean_squared_error(y_train,pred_train_lasso)))
-print(r2_score(y_train, pred_train_lasso))
-print(len(lasso.coef_))
+# region Regression
 
-pred_test_lasso= lasso.predict(X_test)
-print(np.sqrt(mean_squared_error(y_test,pred_test_lasso)))
-print(r2_score(y_test, pred_test_lasso))
 
-# print(lasso.coef_)
-# print(lasso.intercept_)
-# print(lasso.feature_names_in_)
-# Linear Regression Summary
-# X2 = sm.add_constant(X_train)
-# est = sm.OLS(y_train, X2)
-# est2 = est.fit()
-# print(est2.summary())
-#
-# estimator = SVR(kernel="linear")
-# selector = RFE(estimator, n_features_to_select=50, step=25)
-# selector = selector.fit(X_train, y_train)
+def lin_reg(X_train, y_train, X_test, y_test):
+    print("###### Linear Regression #####")
+    reg = LinearRegression().fit(X_train, y_train)
+    print("R^2: ", reg.score(X_test, y_test))
+    # print("coef: ", reg.coef_)
+    # mod = sm.OLS(y_train,X_train_fs)
+    # fii = mod.fit()
+    # p_values = fii.summary2().tables[1]['P>|t|']
+    # print(p_values[p_values < .05])
+    return reg
+
+
+def lin_reg_summary(X_train, y_train):
+    # Linear Regression Summary
+    X2 = sm.add_constant(X_train)
+    est = sm.OLS(y_train, X2)
+    est2 = est.fit()
+    print(est2.summary())
+
+    estimator = SVR(kernel="linear")
+    selector = RFE(estimator, n_features_to_select=50, step=25)
+    selector = selector.fit(X_train, y_train)
+
+
+def lasso_reg(X_train, y_train, X_test, y_test):
+    print("##### Lasso #####")
+    lasso = linear_model.Lasso(alpha=.1, max_iter=1000)
+    # # lasso = linear_model.LassoLarsIC(criterion="aic", fit_intercept=True, max_iter=100000)
+    lasso.fit(X_train, y_train)
+    pred_train_lasso = lasso.predict(X_train)
+
+    print(np.sqrt(mean_squared_error(y_train, pred_train_lasso)))
+    print(r2_score(y_train, pred_train_lasso))
+    print(len(lasso.coef_))
+
+    pred_test_lasso = lasso.predict(X_test)
+    print(np.sqrt(mean_squared_error(y_test, pred_test_lasso)))
+    print(r2_score(y_test, pred_test_lasso))
+    print("Score: ", lasso.score(X_test, y_test))
+    # # print("Alpha: ", lasso.alpha)
+    # print("Coeficients:", lasso.coef_)
+    # print("intercepts:", lasso.intercept_)
+    # print("features:", lasso.n_features_in_)
+    # print(lasso.feature_names_in_)
+    return lasso
+
+
+lin = lin_reg(X_train, y_train, X_test, y_test)
+lasso = lasso_reg(X_train, y_train, X_test, y_test)
 
 
 def calculate_residuals(model, features, label):
@@ -104,6 +176,8 @@ def calculate_residuals(model, features, label):
     df_results['Residuals'] = abs(df_results['Actual']) - abs(df_results['Predicted'])
 
     return df_results
+
+
 resid_df = calculate_residuals(lasso, X_train, y_train)
 outlier_indices = resid_df[resid_df['Residuals'] >= 3 * np.std(resid_df['Residuals'])].index
 print('swag')
@@ -187,3 +261,5 @@ def normal_errors_assumption(model, features, label, p_value_thresh=0.05):
 
 
 normal_errors_assumption(lasso, X_train, np.log(y_train))
+
+# endregion
