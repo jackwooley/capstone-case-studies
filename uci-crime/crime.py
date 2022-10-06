@@ -6,11 +6,13 @@ from sklearn import linear_model
 from sklearn.model_selection import train_test_split
 from pandas import read_csv
 import numpy as np
-import statsmodels.api as sm
+import statsmodels.api as sm 
 from sklearn.feature_selection import RFE
 from sklearn.svm import SVR
+from sklearn.metrics import r2_score
+from sklearn.metrics import mean_squared_error
 
-raw = read_csv('crimedata.csv')
+raw = read_csv('/home/thomaswit/DataSCapstone/capstone-case-studies/uci-crime/crimedata.csv')
 print(raw.head(5))
 print(raw.shape)
 
@@ -64,13 +66,21 @@ X_train, X_test, y_train, y_test = train_test_split(data, response, test_size=0.
 # print("Intercept: ", int)
 
 # Run LASSO on Data
-lasso = linear_model.Lasso(alpha=10)
+lasso = linear_model.Lasso(alpha=.1)
 lasso.fit(X_train, y_train)
-print(len(lasso.coef_))
-print(lasso.coef_)
-print(lasso.intercept_)
-print(lasso.feature_names_in_)
+pred_train_lasso= lasso.predict(X_train)
 
+print(np.sqrt(mean_squared_error(y_train,pred_train_lasso)))
+print(r2_score(y_train, pred_train_lasso))
+print(len(lasso.coef_))
+
+pred_test_lasso= lasso.predict(X_test)
+print(np.sqrt(mean_squared_error(y_test,pred_test_lasso))) 
+print(r2_score(y_test, pred_test_lasso))
+
+# print(lasso.coef_)
+# print(lasso.intercept_)
+# print(lasso.feature_names_in_)
 # Linear Regression Summary
 # X2 = sm.add_constant(X_train)
 # est = sm.OLS(y_train, X2)
