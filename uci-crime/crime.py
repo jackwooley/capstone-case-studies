@@ -116,7 +116,7 @@ print(lasso.intercept_)
 print(lasso.feature_names_in_)
 
 
-
+# code to check assumptions
 def linear_assumption(model, features, label):
     """
     Linearity: Assumes that there is a linear relationship between the predictors and
