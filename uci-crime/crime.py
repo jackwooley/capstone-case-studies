@@ -18,6 +18,7 @@ from sklearn.feature_selection import SelectKBest, chi2
 from sklearn import preprocessing
 from sklearn.feature_selection import RFE, SelectFromModel, f_regression
 
+# print("Your version of SKlearn is ", sklearn.__version__, "if it is not 1 you need to update")
 
 # FOUR ASSUMPTIONS OF LINEAR REGRESSION
 # LINE
@@ -98,6 +99,15 @@ def select_features(X_train, y_train, X_test, k_val):
     # plt.show()
     return X_train_fs, X_test_fs
 
+
+# Correlation Matrix
+# sns.set(rc={"figure.figsize":(90,90)})
+# corr_mat = data.corr().round(3)
+# sns.heatmap(corr_mat, annot=True).figure.savefig("heat_map.png")
+
+
+# plt.show()
+
 # Produce response vector
 y = data[y_name].tolist()
 X = data.drop(y_name, axis=1)
@@ -114,6 +124,7 @@ X_train, X_test = select_features(X_train, y_train, X_test, 'all')
 # all, or val for number of features wanted
 
 # endregion
+
 
 # region Regression
 
@@ -265,3 +276,4 @@ def normal_errors_assumption(model, features, label, p_value_thresh=0.05):
 normal_errors_assumption(lasso, X_train, np.log(y_train))
 
 # endregion
+
