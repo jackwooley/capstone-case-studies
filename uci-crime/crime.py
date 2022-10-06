@@ -27,9 +27,9 @@ from sklearn.feature_selection import RFE, SelectFromModel, f_regression
 # Equal variance
 
 # region IMPORT AND CLEANING
-raw = read_csv('/home/thomaswit/DataSCapstone/capstone-case-studies/uci-crime/crimedata.csv')
-print(raw.head(5))
-print(raw.shape)
+# raw = read_csv('/home/thomaswit/DataSCapstone/capstone-case-studies/uci-crime/crimedata.csv')
+# print(raw.head(5))
+# print(raw.shape)
 raw = read_csv('crimedata.csv')
 # print(raw.head(5))
 # print("base", raw.shape)
@@ -63,12 +63,14 @@ data = data.apply(pd.to_numeric)
 # Dropping heavily missing columns before dropping rows leaves 2117 x 121
 # Dropping just rows leaves us with 302 x 142
 
+
+# SHOW DATA
 # sns.pairplot(data)
 # plt.show()
-data.hist()
-plt.show()
-data.plot()
-plt.show()
+# data.hist()
+# plt.show()
+# data.plot()
+# plt.show()
 
 # endregion
 
@@ -187,7 +189,7 @@ lasso2.fit(X_train, y_train)
 print(len(lasso.coef_))
 print(lasso.coef_)
 print(lasso.intercept_)
-print(lasso.feature_names_in_)
+# print(lasso.feature_names_in_)
 
 
 # code to check assumptions
