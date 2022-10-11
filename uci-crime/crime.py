@@ -18,6 +18,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn import preprocessing
 from sklearn.feature_selection import RFE, SelectFromModel, f_regression
+from sklearn.preprocessing import MinMaxScaler
 
 # print("Your version of SKlearn is ", sklearn.__version__, "if it is not 1 you need to update")
 
@@ -92,12 +93,17 @@ def main():
     y_name = "nonViolPerPop"
     data = remove_outliers(data, y_name)
 
+    # Correlation Matrix
+    # correlation_matrix(data)
+
     # Produce response vector
     y = data[y_name].tolist()
     X = data.drop(y_name, axis=1)
 
     # scale
+    X, y = scale(X, y)
     X, y = power_transform(X, y)
+    y = list(y.T[0])
 
     # Train-test split
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -113,23 +119,23 @@ def main():
     outlier_indices = resid_df[resid_df['Residuals'] >= 3 * np.std(resid_df['Residuals'])].index
     print('swag')
 
-    lasso2 = linear_model.Lasso(alpha=10)
-    lasso2.fit(X_train, y_train)
-    print(len(lasso.coef_))
-    print(lasso.coef_)
-    print(lasso.intercept_)
+    # lasso2 = linear_model.Lasso(alpha=10)
+    # lasso2.fit(X_train, y_train)
+    # print(len(lasso.coef_))
+    # print(lasso.coef_)
+    # print(lasso.intercept_)
     # print(lasso.feature_names_in_)
 
-    lin = lin_reg(X_train, y_train, X_test, y_test)
-    lasso = lasso_reg(X_train, y_train, X_test, y_test)
+    # lin = lin_reg(X_train, y_train, X_test, y_test)
+    # lasso = lasso_reg(X_train, y_train, X_test, y_test)
     ridge_ = ridge_reg(X_train, y_train, X_test, y_test)
-    print('for debugging')
 
-    linear_assumption(lasso, X_train, y_train)
-    linear_assumption(ridge_, X_train, y_train)
-
-    normal_errors_assumption(lasso, X_train, np.log(y_train))
-    normal_errors_assumption(ridge_, X_train, np.log(y_train))
+    # print('for debugging')
+    # linear_assumption(lasso, X_train, y_train)
+    # linear_assumption(ridge_, X_train, y_train)
+    #
+    # normal_errors_assumption(lasso, X_train, np.log(y_train))
+    # normal_errors_assumption(ridge_, X_train, np.log(y_train))
 
     # SHOW DATA
     # sns.pairplot(data)
@@ -142,6 +148,12 @@ def main():
 # endregion
 
 # region preprocessing
+def scale(X, y):
+    X = MinMaxScaler().fit_transform(X)
+    y = MinMaxScaler().fit_transform(np.array(y).reshape(-1,1))
+    return X, y
+
+
 def remove_outliers(data, y_name):
     z = np.abs(stats.zscore(data[y_name]))
     d_c = data[(z<3)]
@@ -153,7 +165,7 @@ def remove_outliers(data, y_name):
 def power_transform(X, y):
     pt = preprocessing.PowerTransformer()
     X = pt.fit_transform(X)
-    # y = pt.fit_transform(np.array(y).reshape(-1,1))
+    y = pt.fit_transform(np.array(y).reshape(-1,1))
     return X, y
 
 
@@ -190,11 +202,6 @@ def correlation_matrix(data):
     # plt.show()
 
 
-# Correlation Matrix
-# correlation_matrix(data)
-
-
-
 # endregion
 
 
@@ -227,21 +234,20 @@ def lin_reg_summary(X_train, y_train):
 
 def lasso_reg(X_train, y_train, X_test, y_test):
     print("##### Lasso #####")
-    lasso = linear_model.Lasso(alpha=20, max_iter=13000)
+    lasso = linear_model.Lasso(alpha=.02, max_iter=13000)
     # # lasso = linear_model.LassoLarsIC(criterion="aic", fit_intercept=True, max_iter=100000)
     lasso.fit(X_train, y_train)
     pred_train_lasso = lasso.predict(X_train)
 
-    print(np.sqrt(mean_squared_error(y_train, pred_train_lasso)))
-    print(r2_score(y_train, pred_train_lasso))
-    print(len(lasso.coef_))
+    print("R2 Score on Train: " , r2_score(y_train, pred_train_lasso))
+    # print(np.sqrt(mean_squared_error(y_train, pred_train_lasso)))
 
     pred_test_lasso = lasso.predict(X_test)
-    print(np.sqrt(mean_squared_error(y_test, pred_test_lasso)))
-    print(r2_score(y_test, pred_test_lasso))
-    print("Score: ", lasso.score(X_test, y_test))
+    # print(np.sqrt(mean_squared_error(y_test, pred_test_lasso)))
+    # print(r2_score(y_test, pred_test_lasso))
+    print("R2 Score on test: ", lasso.score(X_test, y_test))
     # # print("Alpha: ", lasso.alpha)
-    # print("Coeficients:", lasso.coef_)
+    print("Coeficients:", lasso.coef_)
     # print("intercepts:", lasso.intercept_)
     # print("features:", lasso.n_features_in_)
     # print(lasso.feature_names_in_)
@@ -250,18 +256,19 @@ def lasso_reg(X_train, y_train, X_test, y_test):
 
 def ridge_reg(X_train, y_train, X_test, y_test):
     print('##### Ridge #####')
-    ridge = linear_model.Ridge(alpha=20, max_iter=13000)
+    ridge = linear_model.Ridge(alpha=0.01, max_iter=13000)
     ridge.fit(X_train, y_train)
+    print(ridge.coef_)
     pred_train_ridge = ridge.predict(X_train)
 
     print(np.sqrt(mean_squared_error(y_train, pred_train_ridge)))
-    print(r2_score(y_train, pred_train_ridge))
-    print(len(ridge.coef_))
+    print("R2 train: ", r2_score(y_train, pred_train_ridge))
+    # print(len(ridge.coef_))
 
     pred_train_ridge = ridge.predict(X_test)
     print(np.sqrt(mean_squared_error(y_test, pred_train_ridge)))
-    print(r2_score(y_test, pred_train_ridge))
-    print("Score: ", ridge.score(X_test, y_test))
+    # print(r2_score(y_test, pred_train_ridge))
+    print("R2 Test Score: ", ridge.score(X_test, y_test))
     return ridge
 
 
