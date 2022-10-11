@@ -28,13 +28,30 @@ from sklearn.feature_selection import RFE, SelectFromModel, f_regression
 # Normality
 # Equal variance
 
+"""
+Data Cleaning:
+We begun by removing the first 5 columns, as these were labels and not useful features. Then we removed all columns
+that could be considered response variables, or contributed to our primary response: nonViolPerPop. We also decided
+to remove the columns that indicated the racial breakdown of the communities, as it would not be ethical to consider
+these as explanatory variables for crime.
+Next, we needed to consider how to deal with missing data, which this dataset had plenty of. If we decided to simply
+drop all rows with missing data, our data goes from 2215 samples to 302. However, we noticed that there were some
+columns that had mostly missing data. So, we decided to drop any columns that were missing over 80% of their
+values. Surprisingly, almost all of the missing values were accounted for in the columns we dropped. After now dropping
+any rows with missing values, we were left with our clean data: 2118 data points with 92 explanatory variables. We found
+that nonViolPerPop (our response variable) was missing about 90 values. Because these rows must be dropped (we can't
+use them for creating a model) most of the lost samples were due to this column and couldn't be avoided. Our data went
+from 2215 to 2118 samples, around 90 of the rows dropped being necessary. We believe this was the best way to keep as
+much relevant data as possible, both in rows and columns.
+"""
+
 
 def get_data():
     # region IMPORT AND CLEANING
     # raw = read_csv('/home/thomaswit/DataSCapstone/capstone-case-studies/uci-crime/crimedata.csv')
     # print(raw.head(5))
-    # print(raw.shape)
     raw = read_csv('crimedata.csv')
+    # print(raw.shape)
     # print(raw.head(5))
     # print("base", raw.shape)
 
@@ -55,7 +72,7 @@ def get_data():
     count = 0
     to_drop = []
     for x in na_vec:
-        if x / data.shape[0] > .05:
+        if x / data.shape[0] > .80:
             to_drop.append(count)
         count += 1
     data.drop(data.columns[to_drop], axis=1, inplace=True)
@@ -63,10 +80,11 @@ def get_data():
     # Drop any rows with missing values
     data.dropna(inplace=True)
     # print("remove rows with ?:", data.shape)
-    # data = data.apply(pd.to_numeric)
-    # Dropping heavily missing columns before dropping rows leaves 2117 x 121
+    data = data.apply(pd.to_numeric)
+    # Dropping heavily missing columns before dropping rows leaves 2118 x 93
     # Dropping just rows leaves us with 302 x 142
     return data
+
 
 def main():
     data = get_data()
