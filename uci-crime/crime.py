@@ -102,6 +102,17 @@ def main():
     print(lasso.intercept_)
     # print(lasso.feature_names_in_)
 
+    lin = lin_reg(X_train, y_train, X_test, y_test)
+    lasso = lasso_reg(X_train, y_train, X_test, y_test)
+    ridge_ = ridge_reg(X_train, y_train, X_test, y_test)
+    print('for debugging')
+
+    linear_assumption(lasso, X_train, y_train)
+    linear_assumption(ridge_, X_train, y_train)
+
+    normal_errors_assumption(lasso, X_train, np.log(y_train))
+    normal_errors_assumption(ridge_, X_train, np.log(y_train))
+
     # SHOW DATA
     # sns.pairplot(data)
     # plt.show()
@@ -236,12 +247,6 @@ def ridge_reg(X_train, y_train, X_test, y_test):
     return ridge
 
 
-lin = lin_reg(X_train, y_train, X_test, y_test)
-lasso = lasso_reg(X_train, y_train, X_test, y_test)
-ridge_ = ridge_reg(X_train, y_train, X_test, y_test)
-print('for debugging')
-
-
 def calculate_residuals(model, features, label):
     """
     Creates predictions on the features with the model and calculates residuals
@@ -278,10 +283,6 @@ def linear_assumption(model, features, label):
              color='darkorange', linestyle='--')
     plt.title('Actual vs. Predicted')
     plt.show()
-
-
-linear_assumption(lasso, X_train, y_train)
-linear_assumption(ridge_, X_train, y_train)
 
 
 def normal_errors_assumption(model, features, label, p_value_thresh=0.05):
@@ -324,9 +325,6 @@ def normal_errors_assumption(model, features, label, p_value_thresh=0.05):
         print('Confidence intervals will likely be affected')
         print('Try performing nonlinear transformations on variables')
 
-
-normal_errors_assumption(lasso, X_train, np.log(y_train))
-normal_errors_assumption(ridge_, X_train, np.log(y_train))
 
 # endregion
 
