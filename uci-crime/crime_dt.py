@@ -9,7 +9,7 @@ from IPython.display import Image
 import pydotplus
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
-
+import matplotlib.pyplot as plt
 
 data = crime.get_data()
 y_name = "nonViolPerPop"
@@ -28,11 +28,21 @@ dt = DecisionTreeRegressor()
 # Train Decision Tree
 dt = dt.fit(X_train, y_train)
 
+# Predict the response for train dataset
+y_pred_train = dt.predict(X_train)
+
+print("R2 on Train: ", r2_score(y_train, y_pred_train))
+print("RMSE on Train: ", np.sqrt(mean_squared_error(y_train, y_pred_train)))
+
 # Predict the response for test dataset
 y_pred = dt.predict(X_test)
 
-print("R2: ", r2_score(y_test, y_pred))
-print("RMSE: ", np.sqrt(mean_squared_error(y_test, y_pred)))
+print("R2 on Test: ", r2_score(y_test, y_pred))
+print("RMSE on Test: ", np.sqrt(mean_squared_error(y_test, y_pred)))
+
+plt.plot(y_test.tolist(), 'r.', y_pred.tolist(), 'b.')
+plt.show()
+
 
 # Display the Decision Tree
 # Note - Value shows a list that is the count of each class at that point in the tree
