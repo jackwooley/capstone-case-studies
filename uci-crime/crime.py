@@ -110,6 +110,7 @@ def main():
     # data.plot()
     # plt.show()
 
+# endregion
 
 # region preprocessing
 def remove_outliers(data, y_name):
@@ -197,13 +198,13 @@ def lin_reg_summary(X_train, y_train):
 
 def lasso_reg(X_train, y_train, X_test, y_test):
     print("##### Lasso #####")
-    lasso = linear_model.Lasso(alpha=.1, max_iter=1000)
+    lasso = linear_model.Lasso(alpha=20, max_iter=13000)
     # # lasso = linear_model.LassoLarsIC(criterion="aic", fit_intercept=True, max_iter=100000)
     lasso.fit(X_train, y_train)
     pred_train_lasso = lasso.predict(X_train)
 
-    print("R2_train: ", r2_score(y_train, pred_train_lasso))
-    # print(np.sqrt(mean_squared_error(y_train, pred_train_lasso)))
+    print(np.sqrt(mean_squared_error(y_train, pred_train_lasso)))
+    print(r2_score(y_train, pred_train_lasso))
     print(len(lasso.coef_))
 
     pred_test_lasso = lasso.predict(X_test)
@@ -218,6 +219,29 @@ def lasso_reg(X_train, y_train, X_test, y_test):
     return lasso
 
 
+def ridge_reg(X_train, y_train, X_test, y_test):
+    print('##### Ridge #####')
+    ridge = linear_model.Ridge(alpha=20, max_iter=13000)
+    ridge.fit(X_train, y_train)
+    pred_train_ridge = ridge.predict(X_train)
+
+    print(np.sqrt(mean_squared_error(y_train, pred_train_ridge)))
+    print(r2_score(y_train, pred_train_ridge))
+    print(len(ridge.coef_))
+
+    pred_train_ridge = ridge.predict(X_test)
+    print(np.sqrt(mean_squared_error(y_test, pred_train_ridge)))
+    print(r2_score(y_test, pred_train_ridge))
+    print("Score: ", ridge.score(X_test, y_test))
+    return ridge
+
+
+lin = lin_reg(X_train, y_train, X_test, y_test)
+lasso = lasso_reg(X_train, y_train, X_test, y_test)
+ridge_ = ridge_reg(X_train, y_train, X_test, y_test)
+print('for debugging')
+
+
 def calculate_residuals(model, features, label):
     """
     Creates predictions on the features with the model and calculates residuals
@@ -230,6 +254,7 @@ def calculate_residuals(model, features, label):
 
 
 # code to check assumptions
+# if the plots aren't showing up in Pycharm, go to file>settings>tools>python scientific>show plots in tool window
 def linear_assumption(model, features, label):
     """
     Linearity: Assumes that there is a linear relationship between the predictors and
@@ -245,7 +270,7 @@ def linear_assumption(model, features, label):
     df_results = calculate_residuals(model, features, label)
 
     # Plotting the actual vs predicted values
-    sns.lmplot(x='Actual', y='Predicted', data=df_results, fit_reg=False)
+    lmplot(x='Actual', y='Predicted', data=df_results, fit_reg=False)
 
     # Plotting the diagonal line
     line_coords = np.arange(df_results.min().min(), df_results.max().max())
@@ -255,7 +280,8 @@ def linear_assumption(model, features, label):
     plt.show()
 
 
-# linear_assumption(lasso, X_train, y_train)
+linear_assumption(lasso, X_train, y_train)
+linear_assumption(ridge_, X_train, y_train)
 
 
 def normal_errors_assumption(model, features, label, p_value_thresh=0.05):
@@ -299,7 +325,8 @@ def normal_errors_assumption(model, features, label, p_value_thresh=0.05):
         print('Try performing nonlinear transformations on variables')
 
 
-# normal_errors_assumption(lasso, X_train, np.log(y_train))
+normal_errors_assumption(lasso, X_train, np.log(y_train))
+normal_errors_assumption(ridge_, X_train, np.log(y_train))
 
 # endregion
 
