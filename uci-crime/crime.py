@@ -18,6 +18,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.feature_selection import SelectKBest, chi2
 from sklearn import preprocessing
 from sklearn.feature_selection import RFE, SelectFromModel, f_regression
+from sklearn.preprocessing import MinMaxScaler
 
 # print("Your version of SKlearn is ", sklearn.__version__, "if it is not 1 you need to update")
 
@@ -28,56 +29,132 @@ from sklearn.feature_selection import RFE, SelectFromModel, f_regression
 # Normality
 # Equal variance
 
-# region IMPORT AND CLEANING
-# raw = read_csv('/home/thomaswit/DataSCapstone/capstone-case-studies/uci-crime/crimedata.csv')
-# print(raw.head(5))
-# print(raw.shape)
-raw = read_csv('crimedata.csv')
-# print(raw.head(5))
-# print("base", raw.shape)
-
-data = raw
-y_name = "nonViolPerPop"
-data.replace('?', np.NaN, inplace=True)
-# Drop because not relevant
-data.drop(['communityname', 'state', 'countyCode', 'communityCode', 'fold'], axis=1, inplace=True)
-# Drop because TOO relevant to crime prediction
-data.drop(data.columns[124:-1], axis=1, inplace=True)
-# Drop because can't make judgement off this
-data.drop(["racepctblack", "racePctWhite", "racePctAsian", "racePctHisp", "whitePerCap", "blackPerCap", "indianPerCap",
-           "AsianPerCap", "OtherPerCap", "HispPerCap", ], axis=1, inplace=True)
-# print("cut crime:", data.shape)
-# print(data.columns)
-# Dropping columns with mostly missing data
-na_vec = data.isnull().sum()
-count = 0
-to_drop = []
-for x in na_vec:
-    if x / data.shape[0] > .10:
-        to_drop.append(count)
-    count += 1
-data.drop(data.columns[to_drop], axis=1, inplace=True)
-# print("remove columns with many ?:", data.shape)
-# Drop any rows with missing values
-data.dropna(inplace=True)
-# print("remove rows with ?:", data.shape)
-data = data.apply(pd.to_numeric)
-# Dropping heavily missing columns before dropping rows leaves 2117 x 121
-# Dropping just rows leaves us with 302 x 142
+"""
+Data Cleaning:
+We begun by removing the first 5 columns, as these were labels and not useful features. Then we removed all columns
+that could be considered response variables, or contributed to our primary response: nonViolPerPop. We also decided
+to remove the columns that indicated the racial breakdown of the communities, as it would not be ethical to consider
+these as explanatory variables for crime.
+Next, we needed to consider how to deal with missing data, which this dataset had plenty of. If we decided to simply
+drop all rows with missing data, our data goes from 2215 samples to 302. However, we noticed that there were some
+columns that had mostly missing data. So, we decided to drop any columns that were missing over 80% of their
+values. Surprisingly, almost all of the missing values were accounted for in the columns we dropped. After now dropping
+any rows with missing values, we were left with our clean data: 2118 data points with 92 explanatory variables. We found
+that nonViolPerPop (our response variable) was missing about 90 values. Because these rows must be dropped (we can't
+use them for creating a model) most of the lost samples were due to this column and couldn't be avoided. Our data went
+from 2215 to 2118 samples, around 90 of the rows dropped being necessary. We believe this was the best way to keep as
+much relevant data as possible, both in rows and columns.
+"""
 
 
-# SHOW DATA
-# sns.pairplot(data)
-# plt.show()
-# data.hist()
-# plt.show()
-# data.plot()
-# plt.show()
+def get_data():
+    # region IMPORT AND CLEANING
+    # raw = read_csv('/home/thomaswit/DataSCapstone/capstone-case-studies/uci-crime/crimedata.csv')
+    # print(raw.head(5))
+    raw = read_csv('crimedata.csv')
+    # print(raw.shape)
+    # print(raw.head(5))
+    # print("base", raw.shape)
+
+    data = raw
+    data.replace('?', np.NaN, inplace=True)
+    # Drop because not relevant
+    data.drop(['communityname', 'state', 'countyCode', 'communityCode', 'fold'], axis=1, inplace=True)
+    # Drop because TOO relevant to crime prediction
+    data.drop(data.columns[124:-1], axis=1, inplace=True)
+    # Drop because can't make judgement off this
+    data.drop(
+        ["racepctblack", "racePctWhite", "racePctAsian", "racePctHisp", "whitePerCap", "blackPerCap", "indianPerCap",
+         "AsianPerCap", "OtherPerCap", "HispPerCap", ], axis=1, inplace=True)
+    # print("cut crime:", data.shape)
+    # print(data.columns)
+    # Dropping columns with mostly missing data
+    na_vec = data.isnull().sum()
+    count = 0
+    to_drop = []
+    for x in na_vec:
+        if x / data.shape[0] > .80:
+            to_drop.append(count)
+        count += 1
+    data.drop(data.columns[to_drop], axis=1, inplace=True)
+    # print("remove columns with many ?:", data.shape)
+    # Drop any rows with missing values
+    data.dropna(inplace=True)
+    # print("remove rows with ?:", data.shape)
+    data = data.apply(pd.to_numeric)
+    # Dropping heavily missing columns before dropping rows leaves 2118 x 93
+    # Dropping just rows leaves us with 302 x 142
+    return data
+
+
+def main():
+    data = get_data()
+
+    y_name = "nonViolPerPop"
+    data = remove_outliers(data, y_name)
+
+    # Correlation Matrix
+    # correlation_matrix(data)
+
+    # Produce response vector
+    y = data[y_name].tolist()
+    X = data.drop(y_name, axis=1)
+
+    # scale
+    X, y = scale(X, y)
+    X, y = power_transform(X, y)
+    y = list(y.T[0])
+
+    # Train-test split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # print(X_train.columns)
+
+    # feature selection
+    X_train, X_test = select_features(X_train, y_train, X_test, 'all')
+    # all, or val for number of features wanted
+
+    lin = lin_reg(X_train, y_train, X_test, y_test)
+    lasso = lasso_reg(X_train, y_train, X_test, y_test)
+    resid_df = calculate_residuals(lasso, X_train, y_train)
+    outlier_indices = resid_df[resid_df['Residuals'] >= 3 * np.std(resid_df['Residuals'])].index
+    print('swag')
+
+    # lasso2 = linear_model.Lasso(alpha=10)
+    # lasso2.fit(X_train, y_train)
+    # print(len(lasso.coef_))
+    # print(lasso.coef_)
+    # print(lasso.intercept_)
+    # print(lasso.feature_names_in_)
+
+    # lin = lin_reg(X_train, y_train, X_test, y_test)
+    # lasso = lasso_reg(X_train, y_train, X_test, y_test)
+    ridge_ = ridge_reg(X_train, y_train, X_test, y_test)
+
+    # print('for debugging')
+    # linear_assumption(lasso, X_train, y_train)
+    # linear_assumption(ridge_, X_train, y_train)
+    #
+    # normal_errors_assumption(lasso, X_train, np.log(y_train))
+    # normal_errors_assumption(ridge_, X_train, np.log(y_train))
+
+    # SHOW DATA
+    # sns.pairplot(data)
+    # plt.show()
+    # data.hist()
+    # plt.show()
+    # data.plot()
+    # plt.show()
 
 # endregion
 
 # region preprocessing
-def remove_outliers(data):
+def scale(X, y):
+    X = MinMaxScaler().fit_transform(X)
+    y = MinMaxScaler().fit_transform(np.array(y).reshape(-1,1))
+    return X, y
+
+
+def remove_outliers(data, y_name):
     z = np.abs(stats.zscore(data[y_name]))
     d_c = data[(z<3)]
     print('REMOVING OUTLIERS of nonViol, 3 std_devs')
@@ -88,7 +165,7 @@ def remove_outliers(data):
 def power_transform(X, y):
     pt = preprocessing.PowerTransformer()
     X = pt.fit_transform(X)
-    # y = pt.fit_transform(np.array(y).reshape(-1,1))
+    y = pt.fit_transform(np.array(y).reshape(-1,1))
     return X, y
 
 
@@ -125,26 +202,6 @@ def correlation_matrix(data):
     # plt.show()
 
 
-# Correlation Matrix
-# correlation_matrix(data)
-
-data = remove_outliers(data)
-
-# Produce response vector
-y = data[y_name].tolist()
-X = data.drop(y_name, axis=1)
-
-# scale
-X, y = power_transform(X, y)
-
-# Train-test split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-# print(X_train.columns)
-
-# feature selection
-X_train, X_test = select_features(X_train, y_train, X_test, 'all')
-# all, or val for number of features wanted
-
 # endregion
 
 
@@ -177,21 +234,20 @@ def lin_reg_summary(X_train, y_train):
 
 def lasso_reg(X_train, y_train, X_test, y_test):
     print("##### Lasso #####")
-    lasso = linear_model.Lasso(alpha=20, max_iter=13000)
+    lasso = linear_model.Lasso(alpha=.02, max_iter=13000)
     # # lasso = linear_model.LassoLarsIC(criterion="aic", fit_intercept=True, max_iter=100000)
     lasso.fit(X_train, y_train)
     pred_train_lasso = lasso.predict(X_train)
 
-    print(np.sqrt(mean_squared_error(y_train, pred_train_lasso)))
-    print(r2_score(y_train, pred_train_lasso))
-    print(len(lasso.coef_))
+    print("R2 Score on Train: " , r2_score(y_train, pred_train_lasso))
+    # print(np.sqrt(mean_squared_error(y_train, pred_train_lasso)))
 
     pred_test_lasso = lasso.predict(X_test)
-    print(np.sqrt(mean_squared_error(y_test, pred_test_lasso)))
-    print(r2_score(y_test, pred_test_lasso))
-    print("Score: ", lasso.score(X_test, y_test))
+    # print(np.sqrt(mean_squared_error(y_test, pred_test_lasso)))
+    # print(r2_score(y_test, pred_test_lasso))
+    print("R2 Score on test: ", lasso.score(X_test, y_test))
     # # print("Alpha: ", lasso.alpha)
-    # print("Coeficients:", lasso.coef_)
+    print("Coeficients:", lasso.coef_)
     # print("intercepts:", lasso.intercept_)
     # print("features:", lasso.n_features_in_)
     # print(lasso.feature_names_in_)
@@ -200,18 +256,19 @@ def lasso_reg(X_train, y_train, X_test, y_test):
 
 def ridge_reg(X_train, y_train, X_test, y_test):
     print('##### Ridge #####')
-    ridge = linear_model.Ridge(alpha=20, max_iter=13000)
+    ridge = linear_model.Ridge(alpha=0.01, max_iter=13000)
     ridge.fit(X_train, y_train)
+    print(ridge.coef_)
     pred_train_ridge = ridge.predict(X_train)
 
     print(np.sqrt(mean_squared_error(y_train, pred_train_ridge)))
-    print(r2_score(y_train, pred_train_ridge))
-    print(len(ridge.coef_))
+    print("R2 train: ", r2_score(y_train, pred_train_ridge))
+    # print(len(ridge.coef_))
 
     pred_train_ridge = ridge.predict(X_test)
     print(np.sqrt(mean_squared_error(y_test, pred_train_ridge)))
-    print(r2_score(y_test, pred_train_ridge))
-    print("Score: ", ridge.score(X_test, y_test))
+    # print(r2_score(y_test, pred_train_ridge))
+    print("R2 Test Score: ", ridge.score(X_test, y_test))
     return ridge
 
 
@@ -262,18 +319,6 @@ def calculate_residuals(model, features, label):
     return df_results
 
 
-resid_df = calculate_residuals(lasso, X_train, y_train)
-outlier_indices = resid_df[resid_df['Residuals'] >= 3 * np.std(resid_df['Residuals'])].index
-print('swag')
-
-lasso2 = linear_model.Lasso(alpha=10)
-lasso2.fit(X_train, y_train)
-print(len(lasso.coef_))
-print(lasso.coef_)
-print(lasso.intercept_)
-# print(lasso.feature_names_in_)
-
-
 # code to check assumptions
 # if the plots aren't showing up in Pycharm, go to file>settings>tools>python scientific>show plots in tool window
 def linear_assumption(model, features, label):
@@ -299,10 +344,6 @@ def linear_assumption(model, features, label):
              color='darkorange', linestyle='--')
     plt.title('Actual vs. Predicted')
     plt.show()
-
-
-linear_assumption(lasso, X_train, y_train)
-linear_assumption(ridge_, X_train, y_train)
 
 
 def normal_errors_assumption(model, features, label, p_value_thresh=0.05):
@@ -346,8 +387,8 @@ def normal_errors_assumption(model, features, label, p_value_thresh=0.05):
         print('Try performing nonlinear transformations on variables')
 
 
-normal_errors_assumption(lasso, X_train, np.log(y_train))
-normal_errors_assumption(ridge_, X_train, np.log(y_train))
-
 # endregion
 
+
+if __name__ == "__main__":
+    main()
