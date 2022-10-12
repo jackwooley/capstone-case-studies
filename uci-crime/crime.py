@@ -221,6 +221,36 @@ ridge_ = ridge_reg(X_train, y_train, X_test, y_test)
 print('for debugging')
 
 
+def get_nonzero_features(which_model, which_dataset):
+    """Create a dictionary of all the nonzero coefficients from a regression model.
+
+    :param which_model: a sklearn model
+    :param which_dataset: the dataset that the model is derived from. The column names must be included!
+    :return: a dictionary, with the feature names as keys and the nonzero coefficients as values.
+    """
+
+    model_coefficients = pd.DataFrame(which_model.coef_)
+    data_cols = which_dataset.columns
+    list_of_nonzero_feature_names = []
+    nonzero_feature_coefficients = []
+
+    for i in range(0, model_coefficients.shape[0]):
+        if float(model_coefficients.iloc[i, 0]) != float(0):
+            nonzero_feature_coefficients.append(model_coefficients.iloc[i, 0])
+            list_of_nonzero_feature_names.append(data_cols[i])
+
+    nonzero_feature_dict = {}
+
+    for key, value in zip(list_of_nonzero_feature_names, nonzero_feature_coefficients):
+        nonzero_feature_dict[key] = value
+
+    return nonzero_feature_dict
+
+
+lasso_feature_name_dict = get_nonzero_features(lasso, data)
+ridge_feature_name_dict = get_nonzero_features(ridge_, data)
+
+
 def calculate_residuals(model, features, label):
     """
     Creates predictions on the features with the model and calculates residuals
@@ -261,7 +291,7 @@ def linear_assumption(model, features, label):
     df_results = calculate_residuals(model, features, label)
 
     # Plotting the actual vs predicted values
-    lmplot(x='Actual', y='Predicted', data=df_results, fit_reg=False)
+    sns.lmplot(x='Actual', y='Predicted', data=df_results, fit_reg=False)
 
     # Plotting the diagonal line
     line_coords = np.arange(df_results.min().min(), df_results.max().max())
