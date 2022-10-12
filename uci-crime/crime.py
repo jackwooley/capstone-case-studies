@@ -2,6 +2,7 @@
 
 import pandas as pd
 from scipy import stats
+from seaborn import lmplot
 from sklearn.linear_model import LinearRegression
 from sklearn import linear_model
 from sklearn.model_selection import train_test_split
@@ -131,8 +132,8 @@ def main():
     ridge_ = ridge_reg(X_train, y_train, X_test, y_test)
 
     # print('for debugging')
-    # linear_assumption(lasso, X_train, y_train)
-    # linear_assumption(ridge_, X_train, y_train)
+    linear_assumption(lasso, X_train, y_train)
+    linear_assumption(ridge_, X_train, y_train)
     #
     # normal_errors_assumption(lasso, X_train, np.log(y_train))
     # normal_errors_assumption(ridge_, X_train, np.log(y_train))
@@ -147,7 +148,25 @@ def main():
 
 # endregion
 
+"""
+Preprocessing:
+In preprocessing our data, we kept in mind our 4 LINE assumptions. First, we scaled the data down, to improve usability,
+readability, and prevent data size from being an issue. Second, we removed some outliers from the data. We removed any city
+who's nonViolPerPop was over 3 standard deviations out. With this we removed a total of 24 cities, including
+Tukwilacity WA, which was 7 standard deviations above the median, and EastLongmeadowtown MA, 8 standard deviations above.
+From there we challenged the assumptions of linearity and normality by running it through a power transformation. As there
+were 0's in the dataset, we couldn't use the Box-cox method, and so used the Yeo-johnson algorithm. From research, it seems
+that yeo-johnson is more versatile and just as accurate, though it makes it harder to understand exactly what the relationship
+is between the data. From here we challenged the assumption of independence by creating and examining a correlation
+matrix for the data, which allowed us to see to what extent the data is related to itself and thus lead to potential
+mistakes through co-linearity. As the matrix showed a lot of correlation, we knew we would need to employ some form of
+feature selection, and so initially implemented a SelectKBest algorithm which chose an amount of variables based on their
+F-statistic. We later found this to be insufficient, and had better luck running a Lasso/Ridge reduction method. 
+"""
+
 # region preprocessing
+
+
 def scale(X, y):
     X = MinMaxScaler().fit_transform(X)
     y = MinMaxScaler().fit_transform(np.array(y).reshape(-1,1))
