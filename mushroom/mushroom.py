@@ -59,7 +59,11 @@ def blow_up(df):
 
 
 def data_to_dummy(df):
+    df.replace('p', 0, inplace=True)
+    df.replace('e', 1, inplace=True)
     for x in df.columns:
+        if x == 'edible':
+            continue
         df1 = pd.get_dummies(df[x])
         df = pd.concat([df, df1], axis=1).reindex(df.index)
         df.drop(x, axis=1, inplace=True)
