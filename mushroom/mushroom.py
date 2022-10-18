@@ -59,8 +59,8 @@ def blow_up(df):
 
 
 def data_to_dummy(df):
-    df.replace('p', 0, inplace=True)
-    df.replace('e', 1, inplace=True)
+    df['edible'].replace('p', 0, inplace=True)
+    df['edible'].replace('e', 1, inplace=True)
     for x in df.columns:
         if x == 'edible':
             continue
