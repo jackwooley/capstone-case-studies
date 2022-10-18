@@ -58,6 +58,14 @@ def blow_up(df):
     print(df.shape)
 
 
+def data_to_dummy(df):
+    for x in df.columns:
+        df1 = pd.get_dummies(df[x])
+        df = pd.concat([df, df1], axis=1).reindex(df.index)
+        df.drop(x, axis=1, inplace=True)
+    return df
+
+
 def get_data():
     df = read_in_mush()
     df = df.drop(["stalk-root"], axis=1)
@@ -79,4 +87,5 @@ def read_in_mush():
 if __name__ == "__main__":
     eda()
     data = get_data()
-    blow_up(data)
+    # blow_up(data)
+    data_to_dummy(data)
