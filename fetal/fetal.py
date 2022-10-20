@@ -43,7 +43,7 @@ clf = MLPClassifier(solver='sgd', alpha=1e-5, hidden_layer_sizes=(100,100), rand
 clf.fit(X_train, y_train)
 y_pred = clf.predict(X_test)
 
-print(accuracy_score(y_test, y_pred))
+print("MLP ACCURACY: ", accuracy_score(y_test, y_pred))
 
 # GRID SEARCH
 # mlp = MLPClassifier(max_iter=13000)
@@ -66,6 +66,7 @@ print(accuracy_score(y_test, y_pred))
 knn_preds = f_knn.main()
 dt_preds = f_dt.main()
 
+
 def ensemble(pred1, pred2, pred3):
     voted_preds = [0 for _ in range(len(pred1))]
     for i in range(len(pred1)):
@@ -75,10 +76,21 @@ def ensemble(pred1, pred2, pred3):
 
     return voted_preds
 
+
 voted_preds = ensemble(y_pred, knn_preds, dt_preds)
 print(ensemble(y_pred, knn_preds, dt_preds))
 print("accuracy_score: " + str(accuracy_score(y_test, voted_preds)))
 
+# MLP: 0.9296
+# KNN: 0.8873
+# DT: 0.9272
+
+# ENSEMBLE: 0.9366
+
+
+# MLP PRED SIMILARITY WITH TRUE: 0.9883
+
+print("SIMILARITY BETWEEN MLP PRED AND TRUE PRED: ", accuracy_score(y_pred, voted_preds))
 
 # mod_1 = MLPClassifier(solver='sgd', alpha=1e-5, hidden_layer_sizes=(100,100), random_state=1, max_iter=20000)
 # mod_2 = KNNClassifier()
