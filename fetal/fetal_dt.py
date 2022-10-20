@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import plot_confusion_matrix
 
 print('test')
 def getData():
@@ -29,7 +29,7 @@ def create_model_and_preds(x_train, x_test, y_train, y_test):
     decisiont = decisiont.fit(x_train, y_train)
     y_preds_test = decisiont.predict(x_test)
     print("accuracy score of decision tree: " + str(accuracy_score(y_test, y_preds_test)))
-
+    plot_confusion_matrix(decisiont,y_test,y_preds_test)
     return y_preds_test
 
 def main():
@@ -37,7 +37,7 @@ def main():
     x, y =split_f_t(fetal,'fetal_health')
     xtrain, xtest, ytrain, ytest = trainTest(x, y, .2, 42)
     preds = create_model_and_preds(xtrain, xtest, ytrain, ytest)
-    confusion_matrix(ytest,preds)
+    
     return preds
 
 if __name__ == '__main__':
