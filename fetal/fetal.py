@@ -4,6 +4,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV
+import fetal_knn as f_knn
+from sklearn.ensemble import VotingClassifier
+from sklearn.ensemble import RandomForestClassifier
 
 df = pd.read_csv("fetal_health.csv")
 print(df.head(5))
@@ -57,3 +60,31 @@ print(accuracy_score(y_test, y_pred))
 # y_pred = clf.predict(X_test)
 #
 # print(accuracy_score(y_test, y_pred))
+
+
+knn_preds = f_knn.main()
+
+def ensemble(pred1, pred2):
+    voted_preds = [0 for _ in range(len(pred1))]
+    for i in range(len(pred1)):
+        lst = [pred1[i], pred2[i]]
+        voted_preds[i] = max(lst, key=lst.count)
+
+
+    return voted_preds
+
+
+print(ensemble(y_pred, knn_preds))
+
+
+# mod_1 = MLPClassifier(solver='sgd', alpha=1e-5, hidden_layer_sizes=(100,100), random_state=1, max_iter=20000)
+# mod_2 = KNNClassifier()
+# mod_3 = RandomForestClassifier()
+#
+# final_model = VotingClassifier(
+#     estimators=[('mlp', model_1), ('knn', model_2), ('rf', model_3)], voting='hard')
+#
+# final_model.fit(X_train, y_train)
+#
+# # predicting the output on the test dataset
+# pred_final = final_model.predict(X_test)
