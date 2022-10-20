@@ -11,6 +11,7 @@ print('test')
 def getData():
     fetal = pd.read_csv("fetal_health.csv")
     # print(fetal.head())
+    return fetal
 
 def split_f_t(dataset, col: str):
     print(col)
