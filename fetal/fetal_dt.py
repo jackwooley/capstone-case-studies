@@ -13,6 +13,7 @@ def getData():
     print(fetal.head())
 
 def split_f_t(dataset, col: str):
+    print(col)
     y = dataset[col]
     x = dataset.drop(col, axis = 1)
 
