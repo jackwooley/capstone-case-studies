@@ -1,4 +1,4 @@
-from pkgutil import get_data
+
 import pandas as pd
 import numpy as np
 from sklearn.tree import DecisionTreeClassifier
@@ -8,9 +8,9 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
 
 print('test')
-# def getData():
-#     fetal = pd.read_csv("fetal_health.csv")
-#     fetal.head()
+def getData():
+    fetal = pd.read_csv("fetal_health.csv")
+    fetal.head()
 
 def split_f_t(dataset, col: str):
     y = dataset[col]
@@ -31,7 +31,7 @@ def create_model_and_preds(x_train, x_test, y_train, y_test):
     return y_preds_test
 
 def main():
-    fetal = get_data()
+    fetal = getData()
     x, y =split_f_t(fetal,'fetal_health')
     xtrain, xtest, ytrain, ytest = trainTest(x, y, .2, 42)
     preds = create_model_and_preds(xtrain, xtest, ytrain, ytest)
