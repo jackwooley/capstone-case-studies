@@ -14,8 +14,6 @@ def getData():
     return fetal
 
 def split_f_t(dataset, col: str):
-    print(col)
-    print(dataset.head())
     y = dataset[col]
     x = dataset.drop(col, axis = 1)
 
