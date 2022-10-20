@@ -28,8 +28,8 @@ def trainTest(vars, respvar, test_size: float, random_state: int):
 def create_model_and_preds(x_train, x_test, y_train, y_test):
     decisiont = DecisionTreeClassifier()
     decisiont = decisiont.fit(x_train, y_train)
-    print("accuracy score of decision tree: " + str(accuracy_score(y_test, y_preds_test)))
     y_preds_test = decisiont.predict(x_test)
+    print("accuracy score of decision tree: " + str(accuracy_score(y_test, y_preds_test)))
 
     return y_preds_test
 
