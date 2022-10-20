@@ -38,7 +38,6 @@ def main():
     x, y =split_f_t(fetal,'fetal_health')
     xtrain, xtest, ytrain, ytest = trainTest(x, y, .2, 42)
     preds = create_model_and_preds(xtrain, xtest, ytrain, ytest)
-    print(preds)
     return preds
 
 if __name__ == '__main__':
