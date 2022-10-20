@@ -10,7 +10,7 @@ from sklearn.metrics import accuracy_score
 print('test')
 def getData():
     fetal = pd.read_csv("fetal_health.csv")
-    fetal.head()
+    print(fetal.head())
 
 def split_f_t(dataset, col: str):
     y = dataset[col]
