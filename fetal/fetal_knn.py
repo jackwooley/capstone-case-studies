@@ -53,7 +53,7 @@ def create_cross_validated_model(x_train, x_test, y_train_, y_test_):
     gridsearch_preds = new_classifier.predict(x_test)
     accuracy = metrics.accuracy_score(y_test_, gridsearch_preds)
 
-    print(f'Model Accuracy: {accuracy}')
+    print(f'KNN Model Accuracy: {accuracy}')
 
     return gridsearch_preds
 
