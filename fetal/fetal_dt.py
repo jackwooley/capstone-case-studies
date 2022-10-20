@@ -29,7 +29,7 @@ def create_model_and_preds(x_train, x_test, y_train, y_test):
     decisiont = decisiont.fit(x_train, y_train)
     y_preds_test = decisiont.predict(x_test)
     print("accuracy score of decision tree: " + str(accuracy_score(y_test, y_preds_test)))
-    plot_confusion_matrix(decisiont,y_test,y_preds_test)
+    plot_confusion_matrix(decisiont,x_test,y_test)
     return y_preds_test
 
 def main():
