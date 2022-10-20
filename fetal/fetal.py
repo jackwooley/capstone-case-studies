@@ -66,18 +66,18 @@ print(accuracy_score(y_test, y_pred))
 knn_preds = f_knn.main()
 dt_preds = f_dt.main()
 
-def ensemble(pred1, pred2):
+def ensemble(pred1, pred2, pred3):
     voted_preds = [0 for _ in range(len(pred1))]
-    print("voted preds: " + str(voted_preds))
     for i in range(len(pred1)):
-        lst = [pred1[i], pred2[i]]
+        lst = [pred1[i], pred2[i], pred3[i]]
         voted_preds[i] = max(lst, key=lst.count)
 
 
     return voted_preds
 
-
-print(ensemble(y_pred, knn_preds))
+voted_preds = ensemble(y_pred, knn_preds, dt_preds)
+print(ensemble(y_pred, knn_preds, dt_preds))
+print("accuracy_score: " + str(accuracy_score(y_test, voted_preds)))
 
 
 # mod_1 = MLPClassifier(solver='sgd', alpha=1e-5, hidden_layer_sizes=(100,100), random_state=1, max_iter=20000)
