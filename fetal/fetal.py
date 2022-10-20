@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV
 import fetal_knn as f_knn
+import fetal_dt as f_dt
 from sklearn.ensemble import VotingClassifier
 from sklearn.ensemble import RandomForestClassifier
 
@@ -63,9 +64,11 @@ print(accuracy_score(y_test, y_pred))
 
 
 knn_preds = f_knn.main()
+dt_preds = f_dt.main()
 
 def ensemble(pred1, pred2):
     voted_preds = [0 for _ in range(len(pred1))]
+    print("voted preds: " + str(voted_preds))
     for i in range(len(pred1)):
         lst = [pred1[i], pred2[i]]
         voted_preds[i] = max(lst, key=lst.count)
