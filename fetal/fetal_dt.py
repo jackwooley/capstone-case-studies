@@ -1,12 +1,13 @@
 
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import plot_confusion_matrix
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 
 print('test')
 def getData():
@@ -29,7 +30,10 @@ def create_model_and_preds(x_train, x_test, y_train, y_test):
     decisiont = decisiont.fit(x_train, y_train)
     y_preds_test = decisiont.predict(x_test)
     print("accuracy score of decision tree: " + str(accuracy_score(y_test, y_preds_test)))
-    plot_confusion_matrix(decisiont,x_test,y_test)
+    cm = confusion_matrix(y_test,y_preds_test, labels = decisiont.classes_)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=decisiont.classes_)
+    disp.plot()
+    plt.show()
     return y_preds_test
 
 def main():
