@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import stats
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.tree import DecisionTreeClassifier
@@ -29,10 +30,10 @@ def split_f_t(dataset, col: str):
     x = dataset.drop(col, axis = 1)
     return x, y
 
-def scale(X, y):
+def scale(X):
     X = MinMaxScaler().fit_transform(X)
-    y = MinMaxScaler().fit_transform(np.array(y).reshape(-1,1))
-    return X, y
+    # y = MinMaxScaler().fit_transform(np.array(y).reshape(-1,1))
+    return X
 
 
 def remove_outliers(data, y_name):
@@ -112,14 +113,24 @@ def kmeans_elbow(X):
     plt.xlabel('Number of clusters')
     plt.ylabel('Distortion')
     plt.show()
-def kmeans_model(X):
+def kmeans_model(X_train, X_test, y_test):
     km = KMeans(
         n_clusters=3, init='random',
         n_init=10, max_iter=300,
         tol=1e-04, random_state=0
     )
-    y_km = km.fit_predict(X)
+    km.fit(X_train)
+    y_km = km.predict(X_test)
 
+    distr = [[0,0,0],[0,0,0],[0,0,0]]
+
+    tmp = list(y_test)
+    for i in range(len(y_km)):
+        distr[y_km[i]][int(tmp[i])-1] += 1
+
+    clusterID = [id.index(max(id)) for id in distr]
+
+    y_km = [clusterID[i]+1 for i in y_km]
     return y_km
 
 def trainTest(vars, respvar, test_size: float, random_state: int):

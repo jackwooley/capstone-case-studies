@@ -17,30 +17,33 @@ from sklearn.ensemble import RandomForestClassifier
 def main():
     fetal = f_fn.getData()
     X, y = f_fn.split_f_t(fetal, 'fetal_health')
-    X_train, X_test, y_train, y_test = f_fn.trainTest(X, y, 0.2, 42)
+    X = f_fn.scale(X)
+    X_train, X_test, y_train, y_test = f_fn.trainTest(X, y, 0.2, 43)
 
     # preprocessing and EDA
     # f_fn.correlation_matrix(fetal)
     # f_fn.distribution(fetal, 'fetal_health')
-    f_fn.kmeans_elbow(X)
-    km_preds = f_fn.kmeans_model(X)
+
 
 
     # # A few Algorithms
-    # knn_preds = f_fn.knn_model(X_train, X_test, y_train, y_test)
-    # dt_preds = f_fn.dt_model(X_train, X_test, y_train, y_test)  # TODO: PREVENT OVER-FITTING
-    # mlp_preds = f_fn.mlp_model(X_train, X_test, y_train, y_test)
-    #
-    # f_fn.confusionMatrix(y_test, knn_preds)
-    # f_fn.confusionMatrix(y_test, dt_preds)
-    # f_fn.confusionMatrix(y_test, mlp_preds)
-    #
-    #
-    # # Bagging, boosting
-    # voted_preds = f_fn.ensemble(mlp_preds, knn_preds, dt_preds)
-    # print("Voting accuracy_score: " + str(accuracy_score(y_test, voted_preds)))
-    #
-    # f_fn.confusionMatrix(y_test, voted_preds)
+    f_fn.kmeans_elbow(X)
+    km_preds = f_fn.kmeans_model(X_train, X_test, y_test)
+    knn_preds = f_fn.knn_model(X_train, X_test, y_train, y_test)
+    dt_preds = f_fn.dt_model(X_train, X_test, y_train, y_test)  # TODO: PREVENT OVER-FITTING
+    mlp_preds = f_fn.mlp_model(X_train, X_test, y_train, y_test)
+
+    f_fn.confusionMatrix(y_test, km_preds)
+    f_fn.confusionMatrix(y_test, knn_preds)
+    f_fn.confusionMatrix(y_test, dt_preds)
+    f_fn.confusionMatrix(y_test, mlp_preds)
+
+
+    # Bagging, boosting
+    voted_preds = f_fn.ensemble(mlp_preds, knn_preds, dt_preds)
+    print("Voting accuracy_score: " + str(accuracy_score(y_test, voted_preds)))
+
+    f_fn.confusionMatrix(y_test, voted_preds)
 
 
     return 1
