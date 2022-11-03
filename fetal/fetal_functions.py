@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
@@ -43,15 +44,15 @@ def remove_outliers(data, y_name):
 
 
 def correlation_matrix(data):
-    sns.set(rc={"figure.figsize": (90, 90)})
+    sns.set(rc={"figure.figsize": (15, 15)})
     corr_mat = data.corr().round(3)
-    # mask = np.triu(np.ones_like(corr_mat, dtype=bool))
-    # sns.heatmap(corr_mat, annot=True, vmax=1, vmin=-1, center=0, cmap='vlag', mask=mask).figure.savefig("heat_map_2.png")
-    corr_mat = corr_mat.unstack()
-    high_corr = corr_mat[abs(corr_mat) > 0.7]
-    high_corr = high_corr[1 > high_corr]
-    print("HIGH CORRELATION")
-    print(high_corr)
+    mask = np.triu(np.ones_like(corr_mat, dtype=bool))
+    sns.heatmap(corr_mat, annot=True, vmax=1, vmin=-1, center=0, cmap='vlag', mask=mask).figure.savefig("heat_map_1.png")
+    # corr_mat = corr_mat.unstack()
+    # high_corr = corr_mat[abs(corr_mat) > 0.7]
+    # high_corr = high_corr[1 > high_corr]
+    # print("HIGH CORRELATION")
+    # print(high_corr)
     # f = open("high_corr.txt", x)
     # f.write(high_corr)
     # f.close()
@@ -64,6 +65,62 @@ def power_transform(X, y):
     y = pt.fit_transform(np.array(y).reshape(-1,1))
     return X, y
 
+def distribution(df, target):
+    figure, axes = plt.subplots(nrows=6, ncols=4, figsize =(15,20))
+    row = 0
+    col = 0
+    for feature in df.columns:
+        df[feature].value_counts().plot(ax=axes[row, col], kind='bar', xlabel=feature, rot=0)
+        col = col+1 if col < 3 else 0
+        row = row + 1 if col == 0 else row
+    plt.tight_layout()
+    plt.savefig('count_chart.png')
+    # plt.show()
+
+    # show again based on correlation
+    y = df[target]
+    X = df.drop([target], axis=1)
+
+    df1 = df[df[target] == 1]
+    df2 = df[df[target] == 2]
+    df3 = df[df[target] == 3]
+    figure, axes = plt.subplots(nrows=len(df.columns)-1, ncols=3, figsize=(15,40))
+    row = 0
+    for feature in df.columns:
+        if feature == target:
+            continue
+        df1[feature].value_counts().plot(ax=axes[row, 0], kind='bar', xlabel=feature+" 1", rot=0)
+        df2[feature].value_counts().plot(ax=axes[row, 1], kind='bar', xlabel=feature+" 2", rot=0)
+        df3[feature].value_counts().plot(ax=axes[row, 2], kind='bar', xlabel=feature+" 3", rot=0)
+        row += 1
+    plt.tight_layout()
+    plt.savefig('distribution.png')
+
+def kmeans_elbow(X):
+    distortions = []
+    for i in range(1, 11):
+        km = KMeans(
+            n_clusters=i, init='random',
+            n_init=10, max_iter=300,
+            tol=1e-04, random_state=0
+        )
+        km.fit(X)
+        distortions.append(km.inertia_)
+
+    # plot
+    plt.plot(range(1, 11), distortions, marker='o')
+    plt.xlabel('Number of clusters')
+    plt.ylabel('Distortion')
+    plt.show()
+def kmeans_model(X):
+    km = KMeans(
+        n_clusters=3, init='random',
+        n_init=10, max_iter=300,
+        tol=1e-04, random_state=0
+    )
+    y_km = km.fit_predict(X)
+
+    return y_km
 
 def trainTest(vars, respvar, test_size: float, random_state: int):
     x_train, x_test, y_train, y_test = train_test_split(vars,respvar, test_size=test_size, random_state=random_state)
