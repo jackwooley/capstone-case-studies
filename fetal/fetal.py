@@ -88,9 +88,9 @@ print("accuracy_score: " + str(accuracy_score(y_test, voted_preds)))
 # ENSEMBLE: 0.9366
 
 
-# MLP PRED SIMILARITY WITH TRUE: 0.9883
+# MLP PRED SIMILARITY WITH ENSEMBLE: 0.9883
 
-print("SIMILARITY BETWEEN MLP PRED AND TRUE PRED: ", accuracy_score(y_pred, voted_preds))
+print("SIMILARITY BETWEEN MLP PRED AND ENSEMBLE PRED: ", accuracy_score(y_pred, voted_preds))
 
 # mod_1 = MLPClassifier(solver='sgd', alpha=1e-5, hidden_layer_sizes=(100,100), random_state=1, max_iter=20000)
 # mod_2 = KNNClassifier()
