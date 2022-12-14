@@ -60,11 +60,11 @@ def correlation_matrix(data):
     # plt.show()
 
 
-def power_transform(X, y):
+def power_transform(X):
     pt = preprocessing.PowerTransformer()
     X = pt.fit_transform(X)
-    y = pt.fit_transform(np.array(y).reshape(-1,1))
-    return X, y
+    # y = pt.fit_transform(np.array(y).reshape(-1,1))
+    return X
 
 def distribution(df, target):
     figure, axes = plt.subplots(nrows=6, ncols=4, figsize =(15,20))
@@ -185,10 +185,11 @@ def ensemble(pred1, pred2, pred3):
         voted_preds[i] = max(lst, key=lst.count)
     return voted_preds
 
-def confusionMatrix(y_real, y_pred):
+def confusionMatrix(y_real, y_pred, title):
     # cm = confusion_matrix(y_real,y_pred, labels = decisiont.classes_)
     # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=decisiont.classes_)
     cm = confusion_matrix(y_real, y_pred)
     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
     disp.plot()
+    plt.title(title)
     plt.show()
