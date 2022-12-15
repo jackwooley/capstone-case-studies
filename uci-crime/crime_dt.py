@@ -11,6 +11,12 @@ from sklearn.metrics import r2_score
 from sklearn.metrics import mean_squared_error
 import matplotlib.pyplot as plt
 
+"""
+Here is where we attempted to create a decision tree model. We used the same cleaned data from before. 2118 x 92.
+Its worth noting that sklearn has different versions of the decision tree package. For this model, we needed the
+regressor decision tree, as our response variable was continuous.
+"""
+
 data = crime.get_data()
 y_name = "nonViolPerPop"
 
