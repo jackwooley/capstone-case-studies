@@ -1,0 +1,442 @@
+,0
+0,By submitting this pull request_ I confirm that you can use_ modify_ copy_ and redistribute this contribution_ under the terms of your choice.
+1,"Pulled in changes from 1.27.31 to 1.27.34
+
+https://github.com/boto/botocore/compare/1.29.30..1.29.34"
+2,"Pulled in changes from 1.27.35
+
+https://github.com/boto/botocore/compare/1.29.34..1.29.35"
+3,"Pulled in changes from 1.27.37
+
+https://github.com/boto/botocore/compare/1.29.36..1.29.37"
+5," 
+I got the below output for the above command
+ 
+But still I am facing the same issue while upload."
+6,So_ I have tried the below command to check whether the credentials configure or not.
+7," 
+But I got the below."
+8,"As per the below table I suspect the credential is not configured properly
+
+!"
+9,"[image](https://user images.githubusercontent.com/16695209/209459368 ec5a59be ee0a 4b95 be88 c492b81ce906.png)
+
+Could you please check this issue and provide the solution to upload the single file in AWS?"
+11,macOS 12
+13,This output can be evaled into the running shell and used by further runs of many tools.
+15,aws cli should just properly implement that itself.
+17,Debian Unstable
+19,The API to do that is sadly not a standard AWS API.
+20,The [AWS documentation](https://docs.aws.amazon.com/IAM/latest/UserGuide/example_sts_Scenario_ConstructFederatedUrl_section.html) just circulates a Python script to do that.
+22,Going from access key to console log is supported_ but only using unrelated scripts.
+25,Debian Unstable
+28,The Tasks started by Code Pipeline also should be successfully placed.
+30,"The closest matching container instance <my instance> is missing an attribute required by your task. I tried running
+   but it returns ""None"" for missing attributes."
+31,Since I am running Blue/Green deployment I decided to try to update the Tasks with Code Pipeline_ but after building the container the Deployment gets stuck   the newly created Task is in state PROVISIONING_ more EC2 instances get spawned by my  ASG but the Task never gets deployed.
+32,"When I do
+ I get 
+ which make me think that there is a bug somewhere in  enable execute command for Blue/Green Deployments."
+33,The moment I turn back enableExecuteCommand to false in my Service the Tasks (in both cases I describe) get immediately placed on the cluster.
+34,"I also tried running this tool [amazon ecs exec checker](https://github.com/aws containers/amazon ecs exec checker) but everything else but ""Exec Enabled for Task"" is green."
+35,I also tried manually to compare the attributes required by my Task Definition and the ones I have on my Container Instance and everything seems to be present.
+37,"  Use Custom Image Anitian PCI Hardened Amazon Linux 2
+  Use the following User Data:
+
+ #!/bin/bash
+
+sudo yum update  y
+
+sudo yum install  y awslogs
+sudo sed  i ""s@us east 1@us west 2@g"" /etc/awslogs/awscli.conf
+sudo systemctl stop awslogsd
+sudo systemctl start awslogsd
+
+sudo yum install  y https://s3.amazonaws.com/ec2 downloads windows/SSMAgent/latest/linux_amd64/amazon ssm agent.rpm
+
+mkdir  p /etc/ecs
+echo ECS_CLUSTER=<my cluster> >> /etc/ecs/ecs.config
+echo ECS_LOGFILE=/log/$(hostname) ecs agent.log >> /etc/ecs/ecs.config
+echo ECS_ENABLE_TASK_IAM_ROLE=true >> /etc/ecs/ecs.config
+echo ECS_AVAILABLE_LOGGING_DRIVERS='[""json file""_""awslogs""]' >> /etc/ecs/ecs.config
+echo ECS_ENABLE_AWSLOGS_EXECUTIONROLE_OVERRIDE=true >> /etc/ecs/ecs.config
+amazon linux extras disable docker
+amazon linux extras install  y ecs
+systemctl enable  now  no block ecs.service
+ 
+  Use the following taskdef.json: 
+
+ {
+  ""containerDefinitions"": [
+    {
+      ""name"": ""<PROJECT_NAME>""_
+      ""image"": ""<IMAGE>""_
+      ""essential"": true_
+      ""portMappings"": [
+        {
+          ""hostPort"": 0_
+          ""containerPort"": 80
+        }
+      ]_
+      ""logConfiguration"": {
+        ""logDriver"": ""awslogs""_
+        ""options"": {
+          ""awslogs group"": ""/ecs/<PROJECT_NAME ENV_NAME>""_
+          ""awslogs region"": ""<REGION>""_
+          ""awslogs stream prefix"": ""ecs""
+        }
+      }_
+      ""linuxParameters"": {
+        ""initProcessEnabled"": true
+      }
+    }
+  ]_
+  ""networkMode"": ""bridge""_
+  ""memory"": ""8000""_
+  ""family"": ""<PROJECT_NAME ENV_NAME td>""_
+  ""enableECSManagedTags"": true_
+  ""executionRoleArn"": ""arn:aws:iam::<UID>:role/ecsTaskExecutionRole""_
+  ""taskRoleArn"": ""arn:aws:iam::<UID>:role/ecsTaskExecutionRole""
+}
+ 
+  Use the follwoing appspec.yaml:
+
+ version: 0.0
+Resources:
+    TargetService:
+      Type: AWS::ECS::Service
+      Properties:
+        TaskDefinition: <TASK_DEFINITION>
+        LoadBalancerInfo:
+          ContainerName: <PROJECT_NAME>
+          ContainerPort: 80
+        CapacityProviderStrategy:
+            Base: 1
+            CapacityProvider: <CAPACITY_PROVIDER>
+            Weight: 2
+ 
+  Enable enableExecuteCommand as described in the previous section."
+38,  Try to redeploy the tasks.
+40,Ubuntu 20.04
+44,I can confirm not all the files were listed and I have no idea why.
+47,both macOS and centOS
+48,Bumps [wheel](https://github.com/pypa/wheel) from 0.37.0 to 0.38.1.
+49,"<details>
+<summary>Changelog</summary>
+<p><em>Sourced from <a href=""https://github.com/pypa/wheel/blob/main/docs/news.rst"">wheel's changelog</a>.</em></p>
+<blockquote>
+<h1>Release Notes</h1>
+<p><strong>UNRELEASED</strong></p>
+<ul>
+<li>Updated vendored <code>packaging</code> to 22.0</li>
+</ul>
+<p><strong>0.38.4 (2022 11 09)</strong></p>
+<ul>
+<li>Fixed <code>PKG INFO</code> conversion in <code>bdist_wheel</code> mangling UTF 8 header values in
+<code>METADATA</code> (PR by Anderson Bravalheri)</li>
+</ul>
+<p><strong>0.38.3 (2022 11 08)</strong></p>
+<ul>
+<li>Fixed install failure when used with <code> no binary</code>_ reported on Ubuntu 20.04_ by
+removing <code>setup_requires</code> from <code>setup.cfg</code></li>
+</ul>
+<p><strong>0.38.2 (2022 11 05)</strong></p>
+<ul>
+<li>Fixed regression introduced in v0.38.1 which broke parsing of wheel file names with
+multiple platform tags</li>
+</ul>
+<p><strong>0.38.1 (2022 11 04)</strong></p>
+<ul>
+<li>Removed install dependency on setuptools</li>
+<li>The future proof fix in 0.36.0 for converting PyPy's SOABI into a abi tag was
+faulty."
+50,"Fixed so that future changes in the SOABI will not change the tag.</li>
+</ul>
+<p><strong>0.38.0 (2022 10 21)</strong></p>
+<ul>
+<li>Dropped support for Python &lt; 3.7</li>
+<li>Updated vendored <code>packaging</code> to 21.3</li>
+<li>Replaced all uses of <code>distutils</code> with <code>setuptools</code></li>
+<li>The handling of <code>license_files</code> (including glob patterns and default
+values) is now delegated to <code>setuptools&gt;=57.0.0</code> (<a href=""https://github redirect.dependabot.com/pypa/wheel/issues/466"">#466</a>)."
+51,"The package dependencies were updated to reflect this change.</li>
+<li>Fixed potential DoS attack via the <code>WHEEL_INFO_RE</code> regular expression</li>
+<li>Fixed <code>ValueError: ZIP does not support timestamps before 1980</code> when using
+<code>SOURCE_DATE_EPOCH=0</code> or when on disk timestamps are earlier than 1980 01 01."
+52,"Such
+timestamps are now changed to the minimum value before packaging.</li>
+</ul>
+<p><strong>0.37.1 (2021 12 22)</strong></p>
+<ul>
+<li>Fixed <code>wheel pack</code> duplicating the <code>WHEEL</code> contents when the build number has changed (<a href=""https://github redirect.dependabot.com/pypa/wheel/issues/415"">#415</a>)</li>
+<li>Fixed parsing of file names containing commas in <code>RECORD</code> (PR by Hood Chatham)</li>
+</ul>
+<p><strong>0.37.0 (2021 08 09)</strong></p>
+<ul>
+<li>Added official Python 3.10 support</li>
+<li>Updated vendored <code>packaging</code> library to v20.9</li>
+</ul>
+<!  raw HTML omitted  >
+</blockquote>
+<p>... (truncated)</p>
+</details>
+<details>
+<summary>Commits</summary>
+<ul>
+<li><a href=""https://github.com/pypa/wheel/commit/6f1608dc1a88f00d2390b9044bd655753f39234c""><code>6f1608d</code></a> Created a new release</li>
+<li><a href=""https://github.com/pypa/wheel/commit/cf8f5ef50e32b836c4ffb43af68107f78dca8d80""><code>cf8f5ef</code></a> Moved news item from PR <a href=""https://github redirect.dependabot.com/pypa/wheel/issues/484"">#484</a> to its proper place</li>
+<li><a href=""https://github.com/pypa/wheel/commit/9ec201660fa07ee0714edd17c979a7039ea852a4""><code>9ec2016</code></a> Removed install dependency on setuptools (<a href=""https://github redirect.dependabot.com/pypa/wheel/issues/483"">#483</a>)</li>
+<li><a href=""https://github.com/pypa/wheel/commit/747e1f6090547abcf65108c5a229cbe21a64a2ae""><code>747e1f6</code></a> Fixed PyPy SOABI parsing (<a href=""https://github redirect.dependabot.com/pypa/wheel/issues/484"">#484</a>)</li>
+<li><a href=""https://github.com/pypa/wheel/commit/76275484bc0de72d1f56601dbba3e816fc2f00c6""><code>7627548</code></a> [pre commit.ci] pre commit autoupdate (<a href=""https://github redirect.dependabot.com/pypa/wheel/issues/480"">#480</a>)</li>
+<li><a href=""https://github.com/pypa/wheel/commit/7b9e8e1022b9c850756ef34bc1a4a88042988a86""><code>7b9e8e1</code></a> Test on Python 3.11 final</li>
+<li><a href=""https://github.com/pypa/wheel/commit/a04dfef41be0ab10eadbb2ed5d02b600682dc487""><code>a04dfef</code></a> Updated the pypi publish action</li>
+<li><a href=""https://github.com/pypa/wheel/commit/94bb62cb182023ac6586c5510ae9031ea56bd682""><code>94bb62c</code></a> Fixed docs not building due to code style changes</li>
+<li><a href=""https://github.com/pypa/wheel/commit/d635664abe560d48723cfc3b73c52ad8c906760a""><code>d635664</code></a> Updated the codecov action to the latest version</li>
+<li><a href=""https://github.com/pypa/wheel/commit/fcb94cd51f7dfd40d88dff37415750d9e3638d3b""><code>fcb94cd</code></a> Updated <strong>version</strong> to match the release</li>
+<li>Additional commits viewable in <a href=""https://github.com/pypa/wheel/compare/0.37.0...0.38.1"">compare view</a></li>
+</ul>
+</details>
+<br />
+
+
+[!"
+53,"[Dependabot compatibility score](https://dependabot badges.githubapp.com/badges/compatibility_score?dependency name=wheel&package manager=pip&previous version=0.37.0&new version=0.38.1)](https://docs.github.com/en/github/managing security vulnerabilities/about dependabot security updates#about compatibility scores)
+
+Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself."
+54,You can also trigger a rebase manually by commenting  .
+55,"[//]: # (dependabot automerge start)
+[//]: # (dependabot automerge end)
+
+ 
+
+<details>
+<summary>Dependabot commands and options</summary>
+<br />
+
+You can trigger Dependabot actions by commenting on this PR:
+                      will close this PR and stop Dependabot recreating it."
+56,"You can achieve the same result by closing it manually
+         You can disable automated security fix PRs for this repo from the [Security Alerts page](https://github.com/aws/aws cli/network/alerts)."
+57,</details>
+58,"Signed off by: Vedarius TopBAE1 Vincent A. Russell <116855141+BRAEVincent52bae@users.noreply.github.com>
+
+*Issue #_ if available:*
+
+*Description of changes:*
+
+
+By submitting this pull request_ I confirm that you can use_ modify_ copy_ and redistribute this contribution_ under the terms of your choice."
+60,OS: macOS Monterey 12.6 (21G115)
+61,"Pulled in changes from 1.27.37 to 1.27.38
+
+https://github.com/boto/botocore/compare/1.29.36..1.29.38"
+62,"Pulled in changes from 1.27.37 to 1.27.38
+
+https://github.com/boto/botocore/compare/1.29.36..1.29.38"
+63,"Pulled in changes from 1.27.39
+
+https://github.com/boto/botocore/compare/1.29.38..1.29.39"
+64,This commit adds support to upgrade the bundled Python interpreter from version 3.9.11 to 3.11.1.
+65,To support this upgrade_ this commit adds 3.11 to the GitHub actions testing matrix and bumps PyInstaller to version 5.7.0.
+66,It also removes the cgi module deprecated in 3.11 and replaces it with email.message.
+67,"Pulled in changes from 1.27.41
+
+https://github.com/boto/botocore/compare/1.29.40..1.29.41"
+68,Updates the requirements on [cryptography](https://github.com/pyca/cryptography) to permit the latest version.
+69,"<details>
+<summary>Changelog</summary>
+<p><em>Sourced from <a href=""https://github.com/pyca/cryptography/blob/main/CHANGELOG.rst"">cryptography's changelog</a>.</em></p>
+<blockquote>
+<p>39.0.0   2023 01 01</p>
+<pre><code>
+* **BACKWARDS INCOMPATIBLE:** Support for OpenSSL 1.1.0 has been removed."
+70,Users on older version of OpenSSL will need to upgrade.
+71,* **BACKWARDS INCOMPATIBLE:** Dropped support for LibreSSL &lt; 3.5.
+72,"The new
+  minimum LibreSSL version is 3.5.0."
+73,"Going forward our policy is to support
+  versions of LibreSSL that are available in versions of OpenBSD that are
+  still receiving security support."
+74,* **BACKWARDS INCOMPATIBLE:** Removed the       :class:   which had been deprecated for several years.
+75,":meth:   and
+  :meth:   should be used instead."
+76,"* **BACKWARDS INCOMPATIBLE:** Support for using MD5 or SHA1 in
+  :class:   PKCS7 has been removed."
+77,"* **BACKWARDS INCOMPATIBLE:** Dropped support for macOS 10.10 and 10.11_ macOS
+  users must upgrade to 10.12 or newer."
+78,* **ANNOUNCEMENT:** The next version of    the way we link OpenSSL.
+79,"This will only impact users who build
+     own version of OpenSSL."
+80,For those users_ the       variables will no longer be respected.
+81,"Instead_ users will need to
+  configure their builds  _."
+82,"* Added support for
+  :ref: ."
+83,"* Added support for disabling RSA key validation checks when loading RSA
+  keys via
+  :func:   :func:   and
+  :meth: ."
+84,This speeds up key loading but is :term:   attacker supplied keys.
+85,"* Significantly improved performance for
+  :class:   when repeatedly calling   with the same key."
+86,"* Added support for creating OCSP requests with precomputed hashes using
+  :meth: ."
+87,"* Added support for loading multiple PEM encoded X.509 certificates from
+  a single input via :func: ."
+88,"<p>.. _v38 0 4:</p>
+<p>38.0.4   2022 11 27
+&lt;/tr&gt;&lt;/table&gt;
+</code></pre></p>
+</blockquote>
+<p>... (truncated)</p>
+</details>
+<details>
+<summary>Commits</summary>
+<ul>
+<li><a href=""https://github.com/pyca/cryptography/commit/338a65a7df74e189f6b5d1d3a6315ffa911b21c2""><code>338a65a</code></a> 39.0.0 version bump (<a href=""https://github redirect.dependabot.com/pyca/cryptography/issues/7954"">#7954</a>)</li>
+<li><a href=""https://github.com/pyca/cryptography/commit/84a3cd7abb16f594d8c315e8aedb4be02583bf6a""><code>84a3cd7</code></a> automatically download and upload circleci wheels (<a href=""https://github redirect.dependabot.com/pyca/cryptography/issues/7949"">#7949</a>)</li>
+<li><a href=""https://github.com/pyca/cryptography/commit/525c0b3d5d89eab7f953be5de5d2b75da1c816f8""><code>525c0b3</code></a> Type annotate release.py (<a href=""https://github redirect.dependabot.com/pyca/cryptography/issues/7951"">#7951</a>)</li>
+<li><a href=""https://github.com/pyca/cryptography/commit/46d2a94d1b574abf5b9e88f84fa7400a138c4edb""><code>46d2a94</code></a> Use the latest 3.10 release when wheel building (<a href=""https://github redirect.dependabot.com/pyca/cryptography/issues/7953"">#7953</a>)</li>
+<li><a href=""https://github.com/pyca/cryptography/commit/f150dc15582c05b1b94cf08ed3b1fbc9c4f52267""><code>f150dc1</code></a> fix CI to work with ubuntu 22.04 (<a href=""https://github redirect.dependabot.com/pyca/cryptography/issues/7950"">#7950</a>)</li>
+<li><a href=""https://github.com/pyca/cryptography/commit/8867724b2b6db528d2900414ef86c122a1f5602a""><code>8867724</code></a> fix README for python3 (<a href=""https://github redirect.dependabot.com/pyca/cryptography/issues/7947"">#7947</a>)</li>
+<li><a href=""https://github.com/pyca/cryptography/commit/4de6304884a752014cb9ad0f67453a5292dfa468""><code>4de6304</code></a> Bump BoringSSL and/or OpenSSL in CI (<a href=""https://github redirect.dependabot.com/pyca/cryptography/issues/7946"">#7946</a>)</li>
+<li><a href=""https://github.com/pyca/cryptography/commit/0a02a7dacf8578ef77991663bbfbfa8770c8f952""><code>0a02a7d</code></a> Replace more deprecated <code>abstractproperty</code> (<a href=""https://github redirect.dependabot.com/pyca/cryptography/issues/7944"">#7944</a>)</li>
+<li><a href=""https://github.com/pyca/cryptography/commit/c28bfb352ab1f390900ef92856a9570aadd5fe2c""><code>c28bfb3</code></a> src/_cffi_src/openssl/evp.py: export EVP_PKEY_set_alias_type in FUNCTIONS (<a href=""https://github redirect.dependabot.com/pyca/cryptography/issues/7"">#7</a>...</li>
+<li><a href=""https://github.com/pyca/cryptography/commit/438f78179c23f226e387c33db703f541b7cecdec""><code>438f781</code></a> Typo fixes (<a href=""https://github redirect.dependabot.com/pyca/cryptography/issues/7942"">#7942</a>)</li>
+<li>Additional commits viewable in <a href=""https://github.com/pyca/cryptography/compare/3.3.2...39.0.0"">compare view</a></li>
+</ul>
+</details>
+<br />
+
+
+Dependabot will resolve any conflicts with this PR as long as you don't alter it yourself."
+89,You can also trigger a rebase manually by commenting  .
+90,"[//]: # (dependabot automerge start)
+[//]: # (dependabot automerge end)
+
+ 
+
+<details>
+<summary>Dependabot commands and options</summary>
+<br />
+
+You can trigger Dependabot actions by commenting on this PR:
+                      will close this PR and stop Dependabot recreating it."
+91,"You can achieve the same result by closing it manually
+         
+
+</details>"
+94,aws cli/2.1.10 Python/3.7.3 Linux/3.10.0 1160.36.2.el7.x86_64 exe/x86_64.centos.7 prompt/off AND aws cli/2.4.17 Python/3.8.8 Linux/5.15.0 56 generic exe/x86_64.ubuntu.20 prompt/off
+96,"# output to stdout:
+WS CLI CONFIGURATION VARIABLES()            AWS CLI CONFIGURATION VARIABLES()
+
+
+
+NAME
+       AWS CLI Configuration Variables  
+
+       Configuration values for the AWS CLI can come from several sources:
+
+."
+97,.
+98,.
+99,"GENERAL OPTIONS
+       The AWS CLI has a few general options:
+
+       center; |l|l|l|l|l|."
+102,The current supported Python version is 3.11 according to the below blog.
+103,"https://aws.amazon.com/blogs/developer/python support policy updates for aws sdks and tools/
+
+Version 3.11 was released 24 October 2022 (https://www.python.org/doc/versions/)_ however_ the latest release of the AWS CLI version 2.9.12 include Python 3.9.11."
+104,Python version 3.9.x is reported in security scans as vulnerable.
+105,The scan flag the python39.dll file which associated with the technology Python Interpreter.
+106,The vulnerability was found in the National Vulnerability Database (NVD).
+107,"Python Interpreter (python39.dll) version 3.9.x is vulnerable to CVEs:
+
+CVE 2022 45061
+CVE 2018 25032
+CVE 2022 42919
+CVE 2015 20107
+CVE 2021 28861
+CVE 2022 37454
+
+It was confirmed that these CVEs do not pose a risk as the AWS CLI do not use the aspects of Python exposed."
+108,Using an up to date version of Python in the MSI package for Windows will resolve security scans alerting.
+112,Windows
+114,A complete review to correct this is required.
+115,Note that some functions like create policy or create role already have the path parameter.
+116,But it's not consistent across all IAM functions and it should be.
+118,It's essential for proper use of IAM.
+121,ubuntu 18.04
+122,"  Add test to ensure that the configure file is synced
+  Add test to ensure autoreconf is version 2.7.31
+  Regenerates the configure file so the test passes"
+123,"*Issue #_ if available:*
+
+Fixes #6197."
+124,"*Description of changes:*
+
+The login command for dotnet is unable to parse the output from the command  _ resulting in an index out of range error."
+125,This is because with dotnet tool version 6.0.402_ a warning message was added in the end of the output.
+126,Additionally_ if   is added_ which breaks the parsing.
+127,Finally_ responses from the   command do not always come in utf 8 format.
+128,This PR addresses these issues to make parsing independent of any lines other than those that appear in the Registered Sources section from the command output.
+129,By submitting this pull request_ I confirm that you can use_ modify_ copy_ and redistribute this contribution_ under the terms of your choice.
+131,"[doc panel](https://user images.githubusercontent.com/2396208/211060560 be2a99d4 49ee 4630 8c48 e2310e02f134.png)
+!"
+132,"[output panel](https://user images.githubusercontent.com/2396208/211060567 5570ba68 0f84 4e0f bbd5 fe4ecf105186.png)
+
+In particular_ the output panel has no defined keys for moving the cursor other than searching and finding."
+133,This doesn't make much sense as it may be crucial to navigate in the output panel_ especially if the output object is long and doesn't fit in a single page.
+134,The output panel should have the same navigation options as the doc panel.
+135,EDIT: it seems to be possible to move up and down one line in the output panel with the _Ctrl P_ and _Ctrl N_ key bindings_ which are_ however_ not documented.
+138,macOS 11.7.2_ iTerm2 3.4.18_ GNU Bash 5.1.16
+139,"Pulled in changes from 1.27.45
+
+https://github.com/boto/botocore/compare/1.29.44..1.29.45"
+140,"Hi @kdaily_  Some Grammatical Corrections
+
+By submitting this pull request_ I confirm that you can use_ modify_ copy_ and redistribute this contribution_ under the terms of your choice."
+142,Regardless of what key I press_ no characters appear in the terminal any more.
+143,I have tried Ctrl + C too_ but it doesn't change the unresponsiveness of my terminal either.
+147,Install Ubuntu 2020 using WSL 2 on a Windows Enterprise machine.
+148,2.
+149,"Install AWS CLI and the SSM plugin
+3."
+150,Launch a session with  4.
+151,"Wait 5 minutes
+5."
+153,The problem occurs _after this__ as my terminal becomes unusable for further commands_ nothing appears on my screen any more as I type.
+155,Windows 10 Enterprise_ WSL 2_ Ubuntu 2020
+157,Is there any way to redirect the output to a file with auto prompt?
+158,</div>
+160,This will exit with a return code of 255 after 60 failed checks.
+161," 
+Unless my math is incorrect  ."
+162,However this does not appear to be correct.
+163,In my experience I have consistently been return the following error after 10 minutes.
+165,"Pulled in changes from 1.27.48
+
+https://github.com/boto/botocore/compare/1.29.47..1.29.48"
+167,We've been using it for about 2 years.
+168,We've recently introduced some linux users (we had some a year ago) but the script no longer populates the envars.
+169,After some digging we established its the above mentioned.
+170,If we run that command alone (pointing at a valid profile) on one of our mac's it echo's out the token.
+171,If we run the same command on a linux machine there is no output.
+172,Is it not expected that running   will output the value?
+173,According to the documentation it should.
+175,MacM1_ Ubuntu 22.04
+176,"Traceback (most recent call last):
+  File ""/usr/local/bin/aws""_ line 19_ in <module>
+    import awscli.clidriver
+  File ""/home/vagrant/.local/lib/python2.7/site packages/awscli/clidriver.py""_ line 17_ in <module>
+    import botocore.session
+  File ""/home/vagrant/.local/lib/python2.7/site packages/botocore/__init__.py""_ line 96
+    name = f""{name[:  len(matched)]}{sep}{matched.lower()}""
+                                                          ^
+SyntaxError: invalid syntax
+ I am still getting the above error I mentioned."
+177,I tried all the ways mentioned above.
+178,"please help if possible 
+
+_Originally posted by @Abhi lash19 in https://github.com/aws/aws cli/issues/2843#issuecomment 1380186400_"
