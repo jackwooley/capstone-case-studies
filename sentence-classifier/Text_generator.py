@@ -12,6 +12,7 @@ import nltk
 # nltk.download('averaged_perceptron_tagger')
 os.environ["MODEL_DIR"] = 'model/'
 
+
 def gen_list_of_exempt_words():
     df2 = pd.read_csv("model/unigram_freq.csv")
     word_list = df2["word"]
@@ -25,8 +26,9 @@ def gen_list_of_exempt_words():
     print("len of exempt words", len(ex_word))
     return ex_word
 
-def main(section, val):
-    df = pd.read_csv("fin_data.csv")
+
+def main(dataframe_filepath: str, section, val):
+    df = pd.read_csv(dataframe_filepath)
     buck_nam = section + '_bucket'
     mini_df = df.loc[df[buck_nam].isin([int(val)])]
     print("Size", len(mini_df))
@@ -55,7 +57,5 @@ def write_to_file(section, val, augmented_text):
             f.write('\n')
 
 
-
-
 if __name__ == "__main__":
-    main('satisfaction', '5')
+    main("fin_data.csv", 'satisfaction', '5')
