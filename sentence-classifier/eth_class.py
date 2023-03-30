@@ -13,7 +13,7 @@ from flair.datasets import CSVClassificationCorpus
 from sklearn.model_selection import train_test_split
 
 
-df = pd.read_csv("/Users/joshuasperry/Downloads/Sentence Annotation Assignments - Josh Test Example.csv", nrows=500)  # i limited it to 500 for speed of trainig on a cpu, read all when fully training
+df = pd.read_csv("fin_data.csv")  # i limited it to 500 for speed of trainig on a cpu, read all when fully training
 
 label_type = 'satisfaction'
 
@@ -23,8 +23,8 @@ train, dev = train_test_split(train_dev, test_size=0.2)
 def load_df_to_sentences(df: pd.DataFrame):
     sentences = []
     for index, row in df.iterrows():
-        sentence = flair.data.Sentence(row['Text'])
-        label = str(row['Satisfaction'])  # must be a string, it's a classification
+        sentence = flair.data.Sentence(row['text'])
+        label = str(row['satisfaction_bucket'])  # must be a string, it's a classification
         sentence.add_label(label_type, label, 1.0)
         sentences.append(sentence)
     return sentences
@@ -53,7 +53,7 @@ classifier = TextClassifier(document_embeddings, label_dictionary=label_dict, la
 trainer = ModelTrainer(classifier, corpus)
 
 # 7. run training with fine-tuning
-trainer.fine_tune('/Users/joshuasperry/Downloads/flair_satisfaction',
+trainer.fine_tune('./test_distilbert',
                   learning_rate=5.0e-5,  # another good one to mess with
                   mini_batch_size=4,  # increase this, higher for a cpu, don't go above 8 on a gpu, sometimes get problem
                   max_epochs=10,  # mess with this
