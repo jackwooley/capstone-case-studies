@@ -58,4 +58,4 @@ def write_to_file(section, val, augmented_text):
 
 
 if __name__ == "__main__":
-    main("fin_data.csv", 'satisfaction', '5')
+    main("fin_data.csv", 'emotion', '5')
