@@ -12,8 +12,20 @@ from flair.data import Corpus
 from flair.datasets import CSVClassificationCorpus
 from sklearn.model_selection import train_test_split
 
+def append_to_df(df, section, val):
+    df = df[['text', section+'_bucket']]
+
+    df = df.append(pd.read_csv('upsample_txt/'+section+val+'.csv'))
+    df =df.append(pd.read_csv('up_copy_txt/'+section+val+'.csv'))
+    return df
 
 df = pd.read_csv("fin_data.csv")  # i limited it to 500 for speed of trainig on a cpu, read all when fully training
+
+print(len(df))
+df = append_to_df(df, 'satisfaction', '5')
+df = append_to_df(df, 'satisfaction', '1')
+
+print(len(df))
 
 label_type = 'satisfaction'
 
@@ -58,3 +70,4 @@ trainer.fine_tune('./test_distilbert',
                   mini_batch_size=4,  # increase this, higher for a cpu, don't go above 8 on a gpu, sometimes get problem
                   max_epochs=10,  # mess with this
                   )
+

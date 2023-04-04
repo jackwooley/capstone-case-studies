@@ -9,6 +9,8 @@ from nlpaug.util import Action
 import nlpaug.flow as nafc
 import os
 import nltk
+import csv
+
 # nltk.download('averaged_perceptron_tagger')
 os.environ["MODEL_DIR"] = 'model/'
 
@@ -36,6 +38,9 @@ def main(dataframe_filepath: str, section, val):
     ex_word = gen_list_of_exempt_words()
 
     text = mini_df["text"].values.tolist()
+    text += text
+    text += text
+    text += text
 
     print("initializing augmenter")
     # aug = naw.SynonymAug(aug_src='ppdb', model_path='model/ppdb-2.0-tldr', stopwords=ex_word, aug_min=2)
@@ -45,17 +50,38 @@ def main(dataframe_filepath: str, section, val):
     print("Finished augmenting")
     print(len(augmented_text))
 
-    write_to_file(section, val, augmented_text)
+    write_to_file('upsample_txt/', section, val, augmented_text)
 
 
-def write_to_file(section, val, augmented_text):
-    filename = 'upsample_txt/' + section + val + '.txt'
-    with open(filename, 'w') as f:
-        f.write(section + '_bucket, text\n')
+def upsample_basic(path, section, val):
+    df = pd.read_csv(path)
+    buck_nam = section + '_bucket'
+    mini_df = df.loc[df[buck_nam].isin([int(val)])]
+    print("Size", len(mini_df))
+    text = mini_df["text"].values.tolist()
+    text += text
+    text += text
+    # text += text
+    print(len(text))
+
+    write_to_file('up_copy_txt/', section, val, text)
+
+
+
+def write_to_file(dir, section, val, augmented_text):
+    filename = dir + section + val + '.csv'
+    buck_col = section+"_bucket"
+
+    with open(filename, mode='w', encoding='utf-8', newline='') as up_file:
+        fieldnames = [buck_col, 'text']
+        f_writer = csv.writer(up_file)
+        f_writer.writerow(fieldnames)
         for line in augmented_text:
-            f.write(val + ',' + line)
-            f.write('\n')
+            f_writer.writerow([val, line])
+
+
 
 
 if __name__ == "__main__":
-    main("fin_data.csv", 'emotion', '5')
+    upsample_basic('fin_data.csv', 'satisfaction', '1')
+    main('fin_data.csv', 'satisfaction', '1')
