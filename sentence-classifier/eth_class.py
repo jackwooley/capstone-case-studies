@@ -7,10 +7,20 @@ from flair.datasets import TREC_6
 from flair.embeddings import TransformerDocumentEmbeddings
 from flair.models import TextClassifier
 from flair.trainers import ModelTrainer
-
 from flair.data import Corpus
 from flair.datasets import CSVClassificationCorpus
 from sklearn.model_selection import train_test_split
+from sklearn.utils import resample
+import nlpaug.augmenter.char as nac
+import nlpaug.augmenter.word as naw
+import nlpaug.augmenter.sentence as nas
+from nlpaug.util import Action
+import nlpaug.flow as nafc
+import os
+import nltk
+import csv
+from Text_generator import gen_list_of_exempt_words
+
 
 def append_to_df(df, section, val):
     df = df[['text', section+'_bucket']]
@@ -28,26 +38,64 @@ def load_df_to_sentences(df: pd.DataFrame, label_type):
         sentences.append(sentence)
     return sentences
 
+def upsample(df, key, section):
+    df_majority = df[df[key] == 3]
+    new_df = df_majority.copy(deep=True)
+    for targ in [1,5]:
+        df_minority = df[df[key] == targ]
+        df_minority_upsampled = resample(df_minority,
+                                     replace=True,
+                                     n_samples = df_majority.shape[0])
+        df_minority_upsampled = upsample_in_place(df_minority_upsampled, section, targ)
+        new_df = pd.concat([new_df, df_minority_upsampled, df_minority])
+
+    return new_df
+
+
+def upsample_in_place(df, section, val):
+    ex_word = gen_list_of_exempt_words()
+
+    text = df["text"].values.tolist()
+    aug = naw.SynonymAug(aug_src='wordnet', stopwords=ex_word, aug_min=2, aug_max=5)
+    augmented_text = aug.augment(text)
+    df = pd.DataFrame(augmented_text, columns=['text'])
+    buck_nam = section + '_bucket'
+    df[buck_nam] = val
+
+    return df
+
 def main():
     df = pd.read_csv("fin_data.csv")  # i limited it to 500 for speed of training on a cpu, read all when fully training
 
     # Adding Upsampled data
-    print(len(df))
-    df = append_to_df(df, 'satisfaction', '5')
-    df = append_to_df(df, 'satisfaction', '1')
-    print(len(df))
+    # print(len(df))
+    # df = append_to_df(df, 'satisfaction', '5')
+    # df = append_to_df(df, 'satisfaction', '1')
+    # print(len(df))
 
     # Changing to 3 bucket approach
     df.loc[df["satisfaction_bucket"] == 2, "satisfaction_bucket"] = 1
     df.loc[df["satisfaction_bucket"] == 4, "satisfaction_bucket"] = 5
 
-    print(df["satisfaction_bucket"].value_counts())
+    # print(df["satisfaction_bucket"].value_counts())
 
     label_type = 'satisfaction'
+    target = 'satisfaction_bucket'
+    df = df[['text', 'satisfaction_bucket']]
 
-    train_dev, test = train_test_split(df, test_size=0.2)
-    train, dev = train_test_split(train_dev, test_size=0.2)
+    train_dev, test = train_test_split(df, test_size=0.2, stratify=df[target])
+    train, dev = train_test_split(train_dev, test_size=0.2, stratify=train_dev[target])
 
+    print(len(train), len(dev), len(test))
+    df2 = pd.read_csv('reviews/bucket_reviews.csv')
+    train = pd.concat([train, df2])
+    print(len(train))
+    print(train.value_counts())
+    train = upsample(train, target, 'satisfaction')
+    test = upsample(test, target, 'satisfaction')
+    dev = upsample(dev, target, 'satisfaction')
+
+    print(len(train), len(dev), len(test))
 
 
     train_sentences = load_df_to_sentences(train, label_type)
